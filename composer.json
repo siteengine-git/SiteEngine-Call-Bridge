@@ -1,0 +1,9 @@
+{
+  "name": "siteengine/siteengine-call-bridge",
+  "description": "SiteEngine call tracking companion: DNI, Twilio routing, recordings and attribution.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": {"php": ">=8.1"},
+  "autoload": {"psr-4": {"SiteEngine\\CallBridge\\": "src/"}},
+  "config": {"optimize-autoloader": true, "sort-packages": true}
+}

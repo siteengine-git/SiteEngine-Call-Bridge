@@ -1,0 +1,2 @@
+# Preserve release bytes, including the original manifest and archive.
+* -text

@@ -1,0 +1,15 @@
+# Retained local handoffs and environment inventory are not publication material.
+/SiteEngine-Call-Bridge-*-Project-Prompt-*.txt
+/STATUS.md
+/docs/ALMA-READINESS-*.md
+# External configuration, secrets and operational artifacts.
+.secrets/
+.env
+.env.*
+*.pem
+*.key
+*.sql
+*.log
+recordings/
+vendor/
+node_modules/
