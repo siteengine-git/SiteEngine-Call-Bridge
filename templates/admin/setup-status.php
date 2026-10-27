@@ -45,11 +45,24 @@ if(!current_user_can(\SiteEngine\CallBridge\Admin\Menu::CAP))return;
 <?php if(!$webhooks): ?>
 <p>The base is not a usable public HTTPS URL. Ask the administrator to review it privately; an unsafe value is not displayed.</p>
 <?php else: ?>
-<table class="widefat striped"><thead><tr><th scope="col">Purpose</th><th scope="col">Method</th><th scope="col">URL</th><th scope="col">Use</th></tr></thead><tbody>
+<style>
+.secb-webhooks .secb-webhook { box-sizing: border-box; min-width: 0; margin: 0 0 1em; padding: 1em; border: 1px solid #c3c4c7; background: #fff; }
+.secb-webhooks .secb-webhook h4 { margin: 0 0 .75em; }
+.secb-webhooks .secb-webhook-method { display: inline-block; margin-left: .5em; }
+.secb-webhooks .secb-webhook-url { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; border: 1px solid #c3c4c7; }
+.secb-webhooks .secb-webhook-url:focus { outline: 2px solid #2271b1; outline-offset: 2px; }
+.secb-webhooks .secb-webhook-url code { display: block; box-sizing: border-box; width: max-content; min-width: 100%; margin: 0; padding: .75em; white-space: pre; overflow-wrap: normal; word-break: normal; -webkit-user-select: text; user-select: text; }
+.secb-webhooks .secb-webhook p { margin: .75em 0 0; }
+</style>
+<div class="secb-webhooks">
 <?php foreach($webhooks as $hook): ?>
-<tr><th scope="row"><?php echo esc_html($hook['label']); ?></th><td><?php echo esc_html($hook['method']); ?></td><td><code><?php echo esc_html($hook['url']); ?></code></td><td><?php echo esc_html($hook['use']); ?></td></tr>
+<section class="secb-webhook">
+<h4><?php echo esc_html($hook['label']); ?><code class="secb-webhook-method"><?php echo esc_html($hook['method']); ?></code></h4>
+<div class="secb-webhook-url" role="region" tabindex="0" aria-label="<?php echo esc_attr($hook['label'].' URL'); ?>"><code><?php echo esc_html($hook['url']); ?></code></div>
+<p><?php echo esc_html($hook['use']); ?></p>
+</section>
 <?php endforeach; ?>
-</tbody></table>
+</div>
 <?php endif; ?>
 <p>For pools, safe exhaustion/restore, diagnostic permissions and troubleshooting, read <a href="<?php echo esc_url($helpUrl); ?>">Call Bridge Help &amp; Reference</a>. Twilio is the only supported provider.</p>
 </div>

@@ -1,6 +1,14 @@
 # SiteEngine Call Bridge 0.1.1 — unaccepted candidate
 
-Prepared for review; not deployed and not live-accepted. Database version stays 1.0.0.
+Webhook layout review revision: not deployed or accepted. Database version stays 1.0.0;
+release metadata remains 0.1.1. The previous candidate ZIP is preserved separately.
+
+Endpoint sections keep URLs selectable on one line, with horizontal scrolling when
+needed. Styling is scoped to CB. URL generation, methods and escaping are unchanged.
+The earlier installed candidate passed administrator card/Open, status-label,
+Numbers/Call Log, Help tab/direct-link and duplicate-menu checks. This revision still
+needs installed layout verification after a separately authorized deployment.
+Authenticated non-administrator denial and all telephony acceptance remain pending.
 
 ## Base integration and read-only setup
 

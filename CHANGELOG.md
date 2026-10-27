@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.1.1 - 2026-10-27 (unaccepted candidate; not deployed)
+## 0.1.1 - 2026-10-27 (webhook layout review revision; not deployed)
 
+- Webhook URLs use stacked, CB-scoped endpoint sections with selectable single-line text and keyboard-focusable horizontal scrolling at narrow widths. Endpoint values, methods, escaping and navigation are unchanged.
 - Optional original Base 2.2.2 module navigation and CB-owned Help tab; no dependency on its unaccepted routing patch.
 - Read-only guided Setup & Status distinguishes missing prerequisites, optional features off, configuration presence and pending live acceptance.
 - Shared business context keeps phone roles separate; existing external configuration and per-number settings remain authoritative.

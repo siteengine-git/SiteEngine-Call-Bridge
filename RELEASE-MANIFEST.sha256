@@ -1,9 +1,9 @@
-a0d177e20a73c3c5eeb137210ce582a964b8d816fde96d939b4dd9256d4490f1  ./CHANGELOG.md
+ae345cf5781bdda1ee4e45b4aaf3c394aa39f89d748d54b038c9daee185086a1  ./CHANGELOG.md
 ef6ba42365f6a5a799534707125d775808020b7e3c4bf9799d45abc98382325b  ./composer.json
 a9e2f01aafc54f5a204d97fed401462e0c1abd80ea6693d3df5ebc5d0cb45954  ./config/call-bridge.example.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./index.php
 0ec7c8939b6e070cbc78072663f7c94ad537629caa359052ced342cf01765c7e  ./readme-tabs/call-bridge.php
-c106082bfb1cc33aed691057b443e6d13c70f48936ceab3e8d34d821d7eabead  ./README.md
+ec7b465aa3cf92b2ddbae3540160adc5163d96c70c844d9815e9a8ff02de8cbb  ./README.md
 2be62bc096d49c7455b11686eb5404b8d3e469c984b48a890e86ec8df7e2e00c  ./siteengine-call-bridge.php
 2a11a5496a4c44c2a278b866a822c4e1a03c3f573b41d9db6a3853c417dec263  ./src/Admin/CallLogPage.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./src/Admin/index.php
@@ -44,7 +44,7 @@ c1bb7a28deaac8219d8184b72ce7a77063eee9acdb037642c6cf799eea79b676  ./src/Webhook/
 1427a5420f06465d8f084a58001ae807ac7cd26cc117d7b7e4eb5bca5fbd5d26  ./src/Webhook/TwilioVoiceController.php
 d33eaa17cd7b021865bae2aad59948d044e01f9ff2760354f011aebf5726836d  ./src/Webhook/TwilioWhisperController.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./templates/admin/index.php
-005e3e580767501bb40d1488a4077cc00cb26a52a7a3fdbb25f94dbd3b48b22e  ./templates/admin/setup-status.php
+e2e67c2c50a323a0a65710d9e758d6aad74f8374758cf4ee7f7172a898a80bfa  ./templates/admin/setup-status.php
 244c540f8cc2b77deeb73677a2bef92cd066b76f9337cdcd0d9d9bf0103223cc  ./templates/admin/tracking-numbers.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./templates/index.php
 b3f1d7f0ffd01b3911171622adf3e976be8956f640131f9aa4975d1f8e822bcb  ./uninstall.php
