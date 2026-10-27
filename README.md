@@ -1,6 +1,50 @@
-# SiteEngine Call Bridge
+# SiteEngine Call Bridge 0.1.1 — unaccepted candidate
 
-Version 0.1.0 extracts and modernizes the production-proven Twilio/DNI subsystem from LeadEngine 1.3.0 into a call-only companion plugin.
+Prepared for review; not deployed and not live-accepted. Database version stays 1.0.0.
+
+## Base integration and read-only setup
+
+The original Base 2.2.2 module/Help APIs are supported without its prepared routing patch.
+SiteEngine → Call Bridge opens Setup & Status. Tracking Numbers and Call Log retain
+secb-numbers and secb-calls; Setup retains secb-settings. Without Base, standalone
+navigation and the full Help view remain available. Every page requires manage_options.
+Existing save/delete actions and per-number settings are unchanged.
+
+Setup separates required omissions, optional features switched off, local configuration
+completeness and live acceptance still pending. Base uses warning/Open so a CB-specific
+issue does not send the operator to Business Data. Dashboard/page inspection reads only
+booleans and aggregate counts: no credential values, call rows, recording URLs, provider
+requests, schema changes, schedules or settings writes. Normal WordPress bootstrap
+retains its existing installer/GC side effects; this is not a global no-write guarantee.
+
+Shared facts use the Base facade, with safe absence handling. Public phone, shared
+forwarding reference, per-number forward_to and Twilio tracking number roles remain
+separate; nothing synchronizes or overwrites them. External credentials stay outside the
+replaceable plugin and are never edited by this UI. Only Twilio is supported.
+
+Help & Reference → Call Bridge covers provisioning, routing roles, exact runtime-derived
+webhook methods/URLs, pools/exhaustion, DNI, whispers, qualification, recording/playback,
+diagnostic side effects, troubleshooting, retention and uninstall. Authoritative browser
+consent linkage, CRM inquiry integration and call export remain absent.
+
+## Candidate validation and packaging
+
+Run tests/run.ps1 with -Php pointing to an existing PHP 8.1+ executable and -BaseArchive
+pointing to the original Base 2.2.2 ZIP (the runner checks its SHA-256). It loads original
+Base classes into isolated WordPress/DB fixtures, not an installed website.
+Run tools/package-candidate.ps1 once to build the allow-listed installable artifact,
+then node tools/verify-candidate.cjs. Existing archives are never overwritten.
+The original tools/verify-baseline.cjs intentionally targets the unchanged 0.1.0 source
+snapshot; use the candidate verifier for this checkout. Tests/tools/reports are excluded
+from the installable ZIP.
+
+See verification/0.1.1-candidate.md for executed checks and limits. No server/browser,
+SQL concurrency, real Twilio, call, recording or consent acceptance is implied.
+
+## Retained runtime documentation
+
+
+The retained runtime extracts and modernizes the production-proven Twilio/DNI subsystem from LeadEngine 1.3.0 into a call-only companion plugin.
 
 ## Scope
 
@@ -110,6 +154,6 @@ Once Call Bridge has resolved the tracking number and its `forward_to`, an unexp
 
 Call Bridge preserves its tables on uninstall by default. To deliberately drop them, define `SECB_ALLOW_UNINSTALL_DROP` as `true` before deleting the plugin.
 
-## Next planned release
+## Deferred roadmap
 
-Call-level Google Sheets/Data Manager export belongs in Call Bridge, not Ads Bridge, but is intentionally deferred from 0.1.0 until DNI/Twilio/recording behavior is accepted on the GeneratePress fixture.
+Call-level Google Sheets/Data Manager export belongs in Call Bridge, not Ads Bridge, but remains deferred until DNI/Twilio/recording behavior is accepted on an approved isolated test site. No call export API is implemented.

@@ -36,6 +36,7 @@ final class Plugin
         $this->booted = true;
 
         Installer::maybeUpgrade();
+        \SiteEngine\CallBridge\Integration\BaseIntegration::register();
         add_action('rest_api_init', [new RestRoutes(), 'register']);
 
         if (is_admin()) {

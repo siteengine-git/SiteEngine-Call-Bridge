@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 - 2026-10-27 (unaccepted candidate; not deployed)
+
+- Optional original Base 2.2.2 module navigation and CB-owned Help tab; no dependency on its unaccepted routing patch.
+- Read-only guided Setup & Status distinguishes missing prerequisites, optional features off, configuration presence and pending live acceptance.
+- Shared business context keeps phone roles separate; existing external configuration and per-number settings remain authoritative.
+- Twilio-only onboarding and comprehensive operations/reference guidance without provider actions or credential editing.
+- Isolated Base-present/absent, status, security/redaction, Help and mutation-trap fixtures.
+- No controller/signature/DNI/lease/schema/recording-transport changes. Database version remains 1.0.0.
+
 ## 0.1.0 - 2026-10-20
 
 Initial SiteEngine Call Bridge extraction from the production LeadEngine 1.3.0 call subsystem.
