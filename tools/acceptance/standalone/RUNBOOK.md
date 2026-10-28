@@ -39,6 +39,26 @@ its contents are NOT executed or copied. SQL experiment lease timing is explicit
 
 The global wpdb-shaped class is a small acceptance-owned mysqli adapter, NOT WP's
 wpdb. It implements only the methods used by these pinned repositories/harness.
+Mutation confinement correction (supersedes checkpoint 9084efb's initial-table
+shortcut): the SQL gate matches the ENTIRE statement, including its final byte.
+Only single-row INSERT with an explicit backtick column list and literal VALUES,
+and single-table UPDATE with backtick literal assignments and AND-connected
+literal equality predicates, are supported. Plain quoted values and NULL only;
+quotes/backslashes inside values fail closed, avoiding SQL-mode-dependent escaping.
+The pinned synthetic rows/session/source identifiers need no escaped literals.
+There are exactly three expression exceptions on the lease clone: the repository's
+fixed expiry sweep, and supervisor-only expires_at UTC_TIMESTAMP()-INTERVAL 1
+SECOND / +INTERVAL 5 SECOND by positive numeric id. DELETE is only the exact
+supervisor lease-clone reset, after the existing cessation/ownership checks.
+No joins, aliases, multi-target/multi-row writes, INSERT SELECT, subqueries,
+qualified columns/tables, expressions, OR predicates, RETURNING, duplicate-key,
+ORDER/LIMIT or appended statement tails. Unsupported SQL stops the run; do not
+broaden the gate or retry over evidence during native acceptance. Original-table
+reads, clone DDL ownership checks and clone-prefix-only locks remain unchanged.
+Local tests include actual adapter serialization with an explicit mysqli mock;
+they are not native SQL execution. See verification/stage-s-sql-confinement-results.md
+in the tooling repository for final review results and independent staging digest.
+
 Native adapter/mysqli/MariaDB compatibility remains unverified. Host syntax supports
 hostname with optional numeric port; socket/IPv6/custom DB routing needs review.
 No new privileges or fallback connection method. Session SQL bound is 5 seconds.

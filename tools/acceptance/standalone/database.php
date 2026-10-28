@@ -17,12 +17,35 @@ function secb_standalone_sql_gate(string $sql,string $root,string $database,bool
         foreach($m[1] as $table)if(!in_array($table,$candidate?$tables:array_merge($tables,$original,[$root.'options','information_schema.TABLES','information_schema.PROCESSLIST']),true))throw new RuntimeException('wrong_read_table');
         return;
     }
-    if(preg_match('/^(?:INSERT INTO|UPDATE|DELETE FROM)\s+`?([A-Za-z0-9_]+)`?\b/i',$sql,$m)){if(!in_array($m[1],$tables,true))throw new RuntimeException('wrong_mutation_table');return;}
+    if(preg_match('/^(?:INSERT|UPDATE|DELETE)\b/i',$sql)){
+        secb_standalone_mutation_gate($sql,$tables,$candidate);return;
+    }
     if(!$candidate&&preg_match('/^CREATE TABLE `([A-Za-z0-9_]+)` LIKE `([A-Za-z0-9_]+)`$/D',$sql,$m)){if(!in_array($m[1],$tables,true)||$m[2]!==$root.substr($m[1],strlen($clone)))throw new RuntimeException('wrong_clone_definition');return;}
     if(!$candidate&&preg_match('/^ALTER TABLE `([A-Za-z0-9_]+)` COMMENT=\'cbaccept:20261027:01\'$/D',$sql,$m)&&in_array($m[1],$tables,true))return;
     if(!$candidate&&preg_match('/^DROP TABLE `([A-Za-z0-9_]+)`$/D',$sql,$m)&&in_array($m[1],$tables,true))return;
     throw new RuntimeException('unreviewed_sql_operation');
 }
+/** Whole-statement grammar for Stage S emitters, never a table-prefix shortcut.
+ * Literal fixture values cannot contain quotes/backslashes (no SQL-mode-dependent
+ * escape interpretation). Expressions, aliases, joins, nested reads and tails
+ * are unsupported. Exceptions are the fixed expiry sweep and two expiry-time edits.
+ */
+function secb_standalone_mutation_gate(string $sql,array $tables,bool $candidate):void {
+    $column='\x60[a-z_]+\x60';
+    $literal="(?:'[^'\\\\]*'|NULL)";
+    $assignment=$column.'='.$literal;
+    foreach($tables as $index=>$table){
+        $quoted='\x60'.preg_quote($table,'~').'\x60';
+        if(preg_match('~\AINSERT INTO '.$quoted.' \\('.$column.'(?:,'.$column.')*\\) VALUES \\('.$literal.'(?:,'.$literal.')*\\)\z~D',$sql))return;
+        if(preg_match('~\AUPDATE '.$quoted.' SET '.$assignment.'(?:,'.$assignment.')* WHERE '.$assignment.'(?: AND '.$assignment.')*\z~D',$sql))return;
+        if($index!==1)continue;
+        if($sql==="UPDATE $table SET status='expired', released_at=COALESCE(released_at,UTC_TIMESTAMP()) WHERE status='active' AND expires_at<=UTC_TIMESTAMP()")return;
+        if(!$candidate&&preg_match('~\AUPDATE '.$quoted.' SET expires_at=UTC_TIMESTAMP\\(\\)(?:-INTERVAL 1|\\+INTERVAL 5) SECOND WHERE id=[1-9][0-9]*\z~D',$sql))return;
+        if(!$candidate&&$sql==='DELETE FROM '.chr(96).$table.chr(96))return;
+    }
+    throw new RuntimeException('unsupported_mutation_shape');
+}
+
 final class wpdb {
     public string $prefix,$last_error='';public int $insert_id=0;private mysqli $db;private bool $candidate=false;private string $root;
     public function __construct(string $user,string $password,string $database,string $host){
