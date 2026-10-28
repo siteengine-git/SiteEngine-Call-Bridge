@@ -51,9 +51,17 @@ const results=[];function check(ok,name){results.push({ok:!!ok,name});console.lo
  }
  r=await boot({replies:[{never:true}]});check(r.nodes.business.classes.has('secb-dni-pending'),'in-flight allocation marks eligible nodes pending');await r.advance(2500);check(!r.nodes.business.classes.size&&r.nodes.business.getAttribute('href')==='tel:+12025550190','stalled network anti-flicker timeout unhides original');
  r=await boot({replies:[number()]});r.append('late',new Element('a','(202) 555-0190',{href:'tel:+12025550190'}));r.append('lateUnrelated',new Element('a','Other',{href:'tel:+12025550199'}));check(r.nodes.late.getAttribute('href')==='tel:+12025550101'&&r.nodes.lateUnrelated.getAttribute('href')==='tel:+12025550199','late business node inserted; unrelated late node preserved');
- r=await boot({replies:[number('01'),number('02')]});await r.advance(900000);
+ r=await boot({replies:[number('01'),number('02'),{reject:true}]});await r.advance(900000);
  check(r.nodes.business.getAttribute('href')==='tel:+12025550102','DEFECT D1: replacement number on renewal must update ordinary business links');
  check(r.nodes.explicit.textContent==='(202) 555-0102','replacement renewal does update explicit marker (contrasts D1)');
+ check(r.nodes.label.textContent==='Call us'&&r.nodes.label.getAttribute('href')==='tel:+12025550102','replacement preserves non-phone label while refreshing its href');
+ r.append('replacementLate',new Element('a','(202) 555-0190',{href:'tel:+12025550190'}));
+ check(r.nodes.replacementLate.getAttribute('href')==='tel:+12025550102','late link after replacement receives current number');
+ await r.advance(900000);
+ check(r.nodes.business.getAttribute('href')==='tel:+12025550190'&&r.nodes.business.textContent==='(202) 555-0190'&&r.nodes.label.textContent==='Call us'&&r.nodes.label.getAttribute('href')==='tel:+12025550190','replacement followed by network failure restores original href/text and labels');
+ check(r.nodes.replacementLate.getAttribute('href')==='tel:+12025550190'&&r.nodes.unrelated.getAttribute('href')==='tel:+12025550199','restoration includes late replacement links and preserves unrelated links');
+ r.append('afterRestoration',new Element('a','(202) 555-0190',{href:'tel:+12025550190'}));
+ check(r.nodes.afterRestoration.getAttribute('href')==='tel:+12025550190','late nodes after replacement failure remain original');
  const failed=results.filter(x=>!x.ok).length;console.log(`RESULT ${results.length-failed} PASS / ${failed} FAIL; Node VM with DOM/fetch/clock doubles, not browser or SQL acceptance.`);
  if(process.argv[2])fs.writeFileSync(process.argv[2],JSON.stringify(results,null,2)+'\n');process.exitCode=failed?1:0;
 })().catch(e=>{console.error(e);process.exitCode=2;});

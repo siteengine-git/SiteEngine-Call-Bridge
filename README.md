@@ -1,13 +1,18 @@
-# SiteEngine Call Bridge 0.1.1 — unaccepted candidate
+# SiteEngine Call Bridge 0.1.2 — unaccepted lease/DNI candidate
 
-Webhook layout review revision: not deployed or accepted. Database version stays 1.0.0;
-release metadata remains 0.1.1. The previous candidate ZIP is preserved separately.
+Not deployed or accepted. Database version remains 1.0.0; no schema migration.
+Existing 0.1.0/0.1.1 archives and historical failure evidence are preserved.
 
-Endpoint sections keep URLs selectable on one line, with horizontal scrolling when
-needed. Styling is scoped to CB. URL generation, methods and escaping are unchanged.
-The earlier installed candidate passed administrator card/Open, status-label,
-Numbers/Call Log, Help tab/direct-link and duplicate-menu checks. This revision still
-needs installed layout verification after a separately authorized deployment.
+Lease allocation now fails closed on database uncertainty, checks renewal persistence,
+revalidates number eligibility, and keeps unexpired reservations source-pinned.
+Attribution is saved under the same site allocation lock after transition validation.
+Valid leases remain sticky across pool-size changes; after expiry, current pool rules apply.
+DNI replacement renewals refresh ordinary business links using their remembered original
+phone, preserving original text/href, labels, unrelated links and safe restoration.
+
+The deployed 0.1.1 webhook layout passed installed administrator desktop/narrow checks.
+This new runtime candidate needs separate review, deployment authorization and native
+SQL/browser acceptance. Local mocks do not establish SQL exclusivity or live calling.
 Authenticated non-administrator denial and all telephony acceptance remain pending.
 
 ## Base integration and read-only setup

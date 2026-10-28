@@ -1,16 +1,16 @@
 # Isolated lease/DNI acceptance — PREPARED, NOT EXECUTED
 
 This document and the PHP files are a review proposal. **Do not seed fixtures or
-publish the temporary page under the current task.** Six local contract failures
-are documented in `verification/lease-dni-local-results.md`; resolve/review them
-before interpreting a server run as acceptance. No provider credentials, number
+publish the temporary page under the current task.** The six historical failures remain documented in verification/lease-dni-local-results.md.
+The 0.1.2 fixes and local results are recorded in verification/lease-dni-0.1.2-results.md;
+native SQL/installed DNI acceptance is still pending. No provider credentials, number
 purchases, calls, recordings, permissions changes or shared-plugin edits belong
-to this run. Release/DB remain 0.1.1/1.0.0; no main promotion.
+to this run. Release/DB are 0.1.2/1.0.0; no main promotion.
 
 ## Pin, access, paths and ownership
 
-Runtime pin: f763b3cd4ce1e73416a73c5802b35d88469571ab; package manifest SHA-256
-`4729dc2cd7cc15e32462817d4d71b53033bdff16824a60d640ad9e72b6e83b37`.
+Runtime pin: the unaccepted 0.1.2 candidate delivered with this runbook; package manifest SHA-256
+`a8135e0e227eeee68f7cb436b9224ed2d918ad72e18b652ca1b361336e9ec977`.
 The harness verifies every manifest payload before mutations. Test-tooling is
 pinned by its separate Git checkpoint. A later core-fix candidate requires an
 explicit new manifest pin/review; never bypass the gate.
@@ -21,7 +21,7 @@ Invoke-Site-Wp.ps1 is the website command runner. No project connection script,
 new account/key, browser flag, debug port or cookie transfer.
 
 Let `SITE_ROOT` be the registered WordPress root and `OWNER_HOME=dirname(SITE_ROOT)`.
-Exact run directory: `OWNER_HOME/.secb-acceptance/cb-lease-dni-20261027-01/`.
+Exact run directory: `OWNER_HOME/.secb-acceptance/cb-lease-dni-012-20261028-01/`.
 All run/harness/subcase directories 0700, files 0600, existing site owner/group.
 If any intended path already exists, preserve it; do not seed again or overwrite
 evidence. The operator must review collisions, not delete them to proceed.
@@ -51,6 +51,35 @@ The harness was linted locally; its real WP/SQL/process privileges are untested.
 Missing CREATE/ALTER/DROP/CHECKSUM/proc_open privilege must be reported exactly;
 do not expand privileges, install a database or fall back to application exploits.
 
+## Allocation lock and transition contract (0.1.2)
+
+Lock name is secb_alloc_ plus the first 40 hex characters of SHA-1 of
+DB_NAME + '|' + wpdb->prefix (51 bytes total). It is local to the SQL server
+and shared by every source/session in that site prefix. Acquire uses GET_LOCK
+with a two-second wait. Timeout, NULL/error or unknown result yields no number
+and no attribution upsert. Release is attempted in finally after every acquired
+path, including failures/exceptions; connection close also releases native locks.
+No foreign lock is released. A native release failure remains a server diagnostic
+and is not proven absent by mocks. This serializes allocations at a throughput
+cost; it introduces no schema constraint or migration.
+
+SQL clones use their own prefix-derived lock, so no test intentionally contends
+with the real site's lock. The harness computes that name via the actual installed
+repository under the clone prefix; no legacy per-source lock is tested. Other
+writers (admin number edits, GC, legacy-version requests or direct SQL) do not
+cooperate with this lock. Revalidate eligibility on readback; do not claim a SQL
+constraint or universal protection from arbitrary external edits. Any future
+deployment must avoid overlapping old/new allocator versions in flight.
+
+Unexpired reservations remain source-pinned even when a renewal is rejected.
+Different source, inactive/deleted/changed-number/source mismatch: no returned
+number, no extension/release/relabel, no attribution overwrite. Another pool
+becoming largest does not invalidate an otherwise valid existing lease. After
+expiry, current source/pool rules apply. Empty/exhausted pools can still capture
+attribution following successful checked reads, preserving prior capture behavior.
+Persistence errors never yield a claimed lease; a write may have succeeded before
+an uncertain readback, so keep its reservation rather than freeing it.
+
 ## Stage S: independent real SQL connections, shadow tables only
 
 Resolve the actual `$wpdb->prefix` as `P`; do not guess it. The only new tables:
@@ -65,7 +94,7 @@ An interrupted create lacking the marker is an orphan requiring scoped operator
 review; the harness refuses to guess ownership or drop it automatically.
 
 Preflight checks exact table-name absence, original-table fixture phone/source
-collisions and server-wide IS_FREE_LOCK for each synthetic source. An existing
+collisions and server-wide IS_FREE_LOCK for the clone site allocation lock. An existing
 lock is a collision, not permission to release somebody else's lock. Capture
 original CB counts/checksums, CB option hashes and configuration-file hashes in
 restricted state. No original row values are printed/exported.
@@ -111,13 +140,13 @@ Different session IDs `cbaccept-20261027-01-CASE-a/b` compete for S1. Exactly on
 winner and one null, one active row and no duplicate active number are required.
 Capture start times, connection IDs, durations and SQL-state assertions privately.
 
-For lock-timeout, the supervisor holds the source's real named lock on its own
+For lock-timeout, the supervisor holds the clone site's real allocation lock on its own
 connection; both workers must return null after their GET_LOCK(...,2) waits. The
 supervisor releases only its own lock in finally. For same-session, both workers
 use `cbaccept-20261027-01-CASE`, with alpha and beta: investigate duplicate active
-leases across source locks. Repeat with -01..-20. One nonduplicating observation
-does not establish freedom from this race; also inspect returned source identity
-against requested source (local L3 already deterministically fails).
+leases across sources. Require exactly one winner and one null, exactly one
+active reservation, matching source/session identity and no duplicate number or
+session. Repeat -01..-20; one observation alone does not prove race freedom.
 
 Timeouts: MariaDB max_statement_time=5 for acceptance connections only (no global
 setting; unsupported variable stops the run), barrier readiness 10s, worker
@@ -138,7 +167,7 @@ state, call `secb_accept_own_tables($state)`, then wrap each action in
 - Fill source pool with three distinct sessions: S3/S4 each once, then null;
   S5 must not be borrowed as fallback. Beta must not borrow alpha/other pools.
 - Source change, number deactivation and pool edits touch captured clone IDs only.
-  Preserve returned/stored comparisons for known L3/L4 and sticky-pool policy.
+  Require rejection without renewal or early release; preserve exact original expiry/status/source. Valid sticky leases ignore a new largest pool. After original expiry, acquisition follows the current requested source and largest pool.
 - Do not inject outages/SQL privilege changes into the live database. L1/L2/L5
   failed-query behavior remains mock evidence until a separately reviewed fault
   experiment is designed. A lock timeout is a real safe connection test.
@@ -226,9 +255,21 @@ Required observations:
 4. For D1 reproduction, name winner X/loser Y from actual results. Expire only X's
    captured fixture lease ID; after 4s reload Y while B8 remains inactive so Y
    receives B6. Activate only B8's recorded ID, then let X's next real renewal
-   acquire B8. Compare ordinary link versus explicit marker; pinned runtime is
-   expected to fail. Never edit any global number/destination or unrelated row.
-5. Known L3/L4 source/deactivation and failure-restoration follow-ups require
+   acquire B8. Compare ordinary link versus explicit marker; 0.1.2 must refresh both to B8. Then force only a local fixture-network failure
+   through a separately reviewed page override, or allow an owned pool-exhaustion
+   response after expiry, and require original href/text restoration including late nodes. Never edit any global number/destination or unrelated row.
+5. Before original expiry, snapshot the winner's exact owned lease row and hash
+   its attribution fields privately. After the 4s rate window, POST track/session
+   with the same SID and alternate source plus a different synthetic campaign.
+   Require tracking_number=null, unchanged original lease/expiry/source and an
+   identical attribution hash (do not print request IP/user-agent or row data).
+   B7 must remain unassigned to that SID. Do not accept a new lease or a relabel.
+   Deactivate only its journaled B6/B8 row, then after 4s request renewal with the
+   original source: null, unchanged reservation/expiry and attribution. Restore
+   only that fixture row's previous active flag; it is never freed early. After
+   its original expiry, a new requested source may allocate its current pool and
+   update attribution. Capture response and exact owned-ID SQL readback.
+6. Source/deactivation and failure-restoration follow-ups require
    reviewed single-ID changes, exact ownership checks and saved responses. Do not
    disable database access, introduce bad provider credentials or alter others'
    DNI. Query/HTTP-error injection remains local evidence, not native acceptance.
@@ -267,6 +308,4 @@ conflict. No call rows are expected, and this harness never deletes call records
 No successful local/mock/shadow-table result constitutes telephony or consent
 acceptance. Authenticated non-administrator denial, installed production-theme
 DNI, valid/invalid signed callbacks, live forwarding and secured playback remain
-pending. Recommended next assignment: explicitly fix/review the six reproduced
-contracts, decide source/pool transition policy, rerun local suites and repin this
-proposal before authorizing the prepared fixture writes.
+pending. Recommended next assignment: review the 0.1.2 candidate and this proposal, then separately authorize deployment and the bounded native SQL stage. Browser fixture writes require their own reviewed stage.

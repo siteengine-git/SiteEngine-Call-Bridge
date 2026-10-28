@@ -38,7 +38,7 @@ function write(x){try{localStorage.setItem(STORE,JSON.stringify(x));}catch(e){}}
 function newSid(){try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();}catch(e){}return 'sid-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,14);}
 function digits(v){return String(v||'').replace(/\D+/g,'');}
 function samePhone(a,b){var x=digits(a),y=digits(b);if(x.length===11&&x.charAt(0)==='1')x=x.slice(1);if(y.length===11&&y.charAt(0)==='1')y=y.slice(1);return x.length>=10&&x===y;}
-function isBusinessTel(el){if(!el||!el.matches||!el.matches('a[href^="tel:"]'))return false;var h=el.getAttribute('href')||'';for(var i=0;i<BUSINESS.length;i++)if(samePhone(h,BUSINESS[i]))return true;return false;}
+function isBusinessTel(el){if(!el||!el.matches||!el.matches('a[href^="tel:"]'))return false;var h=el.getAttribute('data-secb-original-href')||el.getAttribute('href')||'';for(var i=0;i<BUSINESS.length;i++)if(samePhone(h,BUSINESS[i]))return true;return false;}
 function eligible(el){return !!(el&&el.nodeType===1&&(isBusinessTel(el)||(el.matches&&el.matches(EXPLICIT))));}
 function scan(root){var out=[];if(eligible(root))out.push(root);if(root&&root.querySelectorAll)root.querySelectorAll('a[href^="tel:"],'+EXPLICIT).forEach(function(el){if(eligible(el))out.push(el);});return out;}
 function markPending(root){scan(root).forEach(function(el){if(el.getAttribute('data-secb-swapped')!=='1')el.classList.add(PENDING);});}

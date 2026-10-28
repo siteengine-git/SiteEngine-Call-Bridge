@@ -30,14 +30,14 @@ function secb_accept_operation_lock(string $run){
 }
 function secb_accept_plan(string $run):array {
     global $wpdb;
-    $expected=dirname(rtrim(ABSPATH,'/')).'/.secb-acceptance/cb-lease-dni-20261027-01';
+    $expected=dirname(rtrim(ABSPATH,'/')).'/.secb-acceptance/cb-lease-dni-012-20261028-01';
     if($run!==$expected||realpath($run)!==$run||is_link($run)||!is_dir($run)||(fileperms($run)&0777)!==0700||fileowner($run)!==posix_geteuid())throw new RuntimeException('Require exact owner-created restricted run directory');
     if(!preg_match('/^[A-Za-z0-9_]+$/',$wpdb->prefix))throw new RuntimeException('Unsafe database prefix');
-    if(hash_file('sha256',SECB_PATH.'RELEASE-MANIFEST.sha256')!=='4729dc2cd7cc15e32462817d4d71b53033bdff16824a60d640ad9e72b6e83b37')throw new RuntimeException('Pinned f763b3c package manifest required');
+    if(hash_file('sha256',SECB_PATH.'RELEASE-MANIFEST.sha256')!=='a8135e0e227eeee68f7cb436b9224ed2d918ad72e18b652ca1b361336e9ec977')throw new RuntimeException('Pinned 0.1.2 review package manifest required');
     foreach(file(SECB_PATH.'RELEASE-MANIFEST.sha256',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES) as $line){if(!preg_match('~^([a-f0-9]{64})  \./([A-Za-z0-9_./-]+)$~',$line,$m)||str_contains($m[2],'..')||hash_file('sha256',SECB_PATH.$m[2])!==$m[1])throw new RuntimeException('Pinned package payload differs');}
     $prefix=$wpdb->prefix.'secb_accept_20261027_01_';if(strlen($prefix.'se_cb_tracking_numbers')>64)throw new RuntimeException('Fixture table name too long');
     $rows=[];foreach([[1,'alpha','last'],[2,'beta','beta'],[3,'pool','large'],[4,'pool','large'],[5,'pool','small']] as [$n,$source,$pool])$rows[]=['phone_number'=>'+120255501'.sprintf('%02d',$n),'forward_to'=>'+12025550190','source'=>'cbaccept_20261027_'.$source,'pool_group'=>'cbaccept_'.$pool,'display_label'=>'cbaccept-20261027-01-'.$n,'record_calls'=>0,'is_active'=>1,'notes'=>'cbaccept-20261027-01'];
-    return ['run'=>'cb-lease-dni-20261027-01','root_prefix'=>$wpdb->prefix,'fixture_prefix'=>$prefix,'tables'=>[$prefix.'se_cb_tracking_numbers',$prefix.'se_cb_number_leases'],'rows'=>$rows,'marker'=>'cbaccept:20261027:01','source_files'=>__FILE__];
+    return ['run'=>'cb-lease-dni-012-20261028-01','root_prefix'=>$wpdb->prefix,'fixture_prefix'=>$prefix,'tables'=>[$prefix.'se_cb_tracking_numbers',$prefix.'se_cb_number_leases'],'rows'=>$rows,'marker'=>'cbaccept:20261027:01','source_files'=>__FILE__];
 }
 function secb_accept_own_tables(array $state):void {
     global $wpdb;
@@ -76,7 +76,8 @@ function secb_accept_sql_operation(string $mode,string $run,bool $write=false,?s
         if(file_exists($run.'/sql-state.json'))throw new RuntimeException('Existing run contents preserved; do not seed twice');
         foreach($plan['tables'] as $table)if(secb_accept_rows($wpdb->prepare('SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=%s',$table)))throw new RuntimeException('Fixture table collision');
         foreach($plan['rows'] as $row)if(secb_accept_rows($wpdb->prepare("SELECT id FROM `{$plan['root_prefix']}se_cb_tracking_numbers` WHERE phone_number=%s OR source=%s",$row['phone_number'],$row['source'])))throw new RuntimeException('Phone/source collision in real tables');
-        foreach(array_unique(array_column($plan['rows'],'source')) as $source){$lock='secb_lease_'.substr(sha1($source),0,24);if((int)$wpdb->get_var($wpdb->prepare('SELECT IS_FREE_LOCK(%s)',$lock))!==1)throw new RuntimeException('Server-wide fixture source lock collision');}
+        $lock=secb_accept_in_fixture($plan,fn()=>(new \SiteEngine\CallBridge\DB\NumberLeaseRepository())->allocationLockName());
+        if((int)$wpdb->get_var($wpdb->prepare('SELECT IS_FREE_LOCK(%s)',$lock))!==1 || $wpdb->last_error!=='')throw new RuntimeException('Site-scoped fixture allocation lock collision');
         $state=$plan+['before'=>secb_accept_snapshot($plan['root_prefix']),'ids'=>[],'phase'=>'creating'];secb_accept_json($run.'/sql-state.json',$state,true);
         foreach(['tracking_numbers','number_leases'] as $suffix){$target=$plan['fixture_prefix'].'se_cb_'.$suffix;$original=$plan['root_prefix'].'se_cb_'.$suffix;secb_accept_query("CREATE TABLE `$target` LIKE `$original`");secb_accept_query($wpdb->prepare("ALTER TABLE `$target` COMMENT=%s",$plan['marker']));}
         secb_accept_own_tables($state);
@@ -89,9 +90,9 @@ function secb_accept_sql_operation(string $mode,string $run,bool $write=false,?s
         $kind=secb_accept_case((string)$case);
         if((int)secb_accept_rows('SELECT COUNT(*) n FROM `'.$state['tables'][1].'`')[0]['n']!==0)throw new RuntimeException('Reset owned clone leases explicitly before race');
         $gate=$run.'/'.$case;if(file_exists($gate)||!mkdir($gate,0700))throw new RuntimeException('Preserve existing case evidence');
-        $lock='secb_lease_'.substr(sha1('cbaccept_20261027_alpha'),0,24);$held=false;$children=[];
+        $lock=secb_accept_in_fixture($state,fn()=>(new \SiteEngine\CallBridge\DB\NumberLeaseRepository())->allocationLockName());$held=false;$children=[];
         try{
-            if((int)$wpdb->get_var($wpdb->prepare('SELECT IS_FREE_LOCK(%s)',$lock))!==1)throw new RuntimeException('Source lock collision');
+            if((int)$wpdb->get_var($wpdb->prepare('SELECT IS_FREE_LOCK(%s)',$lock))!==1)throw new RuntimeException('Fixture allocation lock collision');
             if($kind==='lock-timeout'){$held=(int)$wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s,0)',$lock))===1;if(!$held)throw new RuntimeException('Cannot hold test lock');}
             foreach(['a','b'] as $label){
                 $out=$gate.'/stdout-'.$label.'.txt';$err=$gate.'/stderr-'.$label.'.txt';foreach([$out,$err] as $f){$h=fopen($f,'x');if(!$h)throw new RuntimeException('Evidence collision');fclose($h);chmod($f,0600);}
@@ -109,7 +110,7 @@ function secb_accept_sql_operation(string $mode,string $run,bool $write=false,?s
             $active=(int)secb_accept_rows('SELECT COUNT(*) n FROM `'.$state['tables'][1]."` WHERE status='active' AND expires_at>UTC_TIMESTAMP()")[0]['n'];
             $duplicateSessions=secb_accept_rows('SELECT session_id,COUNT(*) n FROM `'.$state['tables'][1]."` WHERE status='active' AND expires_at>UTC_TIMESTAMP() GROUP BY session_id HAVING COUNT(*)>1");
             $identity=true;foreach($results as $r)if($r['lease']!==null&&($r['lease']['source']!==$r['source']||$r['lease']['session_id']!==$r['session']))$identity=false;
-            $won=count(array_filter($results,fn($r)=>$r['lease']!==null));$pass=$duplicates===[]&&$duplicateSessions===[]&&$identity&&($kind==='lock-timeout'?$won===0:($kind==='same-session'?$active===1:$won===1&&count($leases)===1));
+            $won=count(array_filter($results,fn($r)=>$r['lease']!==null));$pass=$duplicates===[]&&$duplicateSessions===[]&&$identity&&($kind==='lock-timeout'?$won===0:($kind==='same-session'?$active===1&&$won===1&&count($leases)===1:$won===1&&count($leases)===1));
             $summary=['case'=>$case,'pass'=>$pass,'distinct_connections'=>true,'identity_matches'=>$identity,'winners'=>$won,'lease_rows'=>count($leases),'active_rows'=>$active,'duplicate_number_rows'=>count($duplicates),'duplicate_session_rows'=>count($duplicateSessions)];secb_accept_json($gate.'/summary.json',$summary,true);return $summary;
         }finally{
             foreach($children as $p){if(proc_get_status($p)['running']){proc_terminate($p);$end=microtime(true)+1;while(proc_get_status($p)['running']&&microtime(true)<$end)usleep(10000);if(proc_get_status($p)['running'])proc_terminate($p,9);}proc_close($p);}if($held)$wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)',$lock));

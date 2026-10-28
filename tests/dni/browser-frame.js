@@ -6,7 +6,7 @@ var nativeTimer=window.setTimeout.bind(window),timers=new Map(),next=1,requests=
 var track=function(n){return {tracking_number:'+120255501'+n,display_phone:'(202) 555-01'+n,lease_minutes:30};};
 var replies=[track('01')];
 if(scenario==='renewal-failure')replies.push({networkFailure:true});
-if(scenario==='replacement-renewal')replies.push(track('02'));
+if(scenario==='replacement-renewal')replies.push(track('02'),{networkFailure:true});
 if(scenario==='allocation-network-failure')replies=[{networkFailure:true}];
 if(scenario==='stalled-network')replies=[{never:true}];
 if(scenario==='storage-malformed')memory.secb_attribution='{broken';
@@ -31,7 +31,15 @@ window.runDniBrowserCase=async function(){
    if(scenario==='renewal-failure'||scenario==='replacement-renewal'){
     for(var [id,t]of timers)if(t.ms===900000){timers.delete(id);t.fn();}await wait();
     if(scenario==='renewal-failure')assert(business.getAttribute('href')==='tel:+12025550190'&&explicit.textContent==='Original explicit','renewal failure did not restore originals');
-    else assert(business.getAttribute('href')==='tel:+12025550102'&&explicit.textContent==='(202) 555-0102','DEFECT D1: ordinary business link retained old number after replacement renewal');
+    else {
+     assert(business.getAttribute('href')==='tel:+12025550102'&&explicit.textContent==='(202) 555-0102','DEFECT D1: ordinary business link retained old number after replacement renewal');
+     assert(document.getElementById('label').textContent==='Call us'&&document.getElementById('label').getAttribute('href')==='tel:+12025550102','replacement corrupted non-phone label');
+     var replacementLate=document.createElement('a');replacementLate.href='tel:+12025550190';replacementLate.textContent='(202) 555-0190';document.getElementById('nondial').append(replacementLate);await wait();
+     assert(replacementLate.getAttribute('href')==='tel:+12025550102','late node missed replacement number');
+     for(var [id,t]of timers)if(t.ms===900000){timers.delete(id);t.fn();}await wait();
+     assert(business.getAttribute('href')==='tel:+12025550190'&&business.textContent==='(202) 555-0190'&&replacementLate.getAttribute('href')==='tel:+12025550190'&&explicit.textContent==='Original explicit','replacement followed by failure did not restore originals');
+     assert(other.getAttribute('href')==='tel:+12025550199'&&document.getElementById('label').textContent==='Call us','restoration mutated unrelated link or non-phone label');
+    }
    }
   }
   result.ok=true;

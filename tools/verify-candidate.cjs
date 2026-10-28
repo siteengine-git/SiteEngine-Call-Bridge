@@ -24,11 +24,11 @@ function readZip(path){
 }
 const old=readZip('siteengine-call-bridge-0.1.0.zip');
 assert(old.bytes.length===52306&&sha(old.bytes)==='5a1b28ac80dfcd2b6e09cd34bdc9b2d126774b588a501d852fe01f4bdd563fb8','Original archive changed');
-const path=process.argv[2]||'siteengine-call-bridge-0.1.1-candidate.zip',candidate=readZip(path),files=candidate.files;
+const path=process.argv[2]||'siteengine-call-bridge-0.1.2-lease-dni-review-20261028.zip',candidate=readZip(path),files=candidate.files;
 const additions=['src/Integration/BaseIntegration.php','src/Support/Readiness.php','src/Support/SharedBusinessContext.php','templates/admin/setup-status.php','readme-tabs/call-bridge.php'];
 assert(files.size===old.files.size+additions.length,'Unexpected artifact file count');
 for(const n of additions)assert(files.has(n),'Missing addition');
-const changed=new Set(['siteengine-call-bridge.php','src/Plugin.php','src/Admin/Menu.php','src/Admin/SettingsPage.php','README.md','CHANGELOG.md','RELEASE-MANIFEST.sha256']);
+const changed=new Set(['siteengine-call-bridge.php','src/Plugin.php','src/Admin/Menu.php','src/Admin/SettingsPage.php','README.md','CHANGELOG.md','RELEASE-MANIFEST.sha256','src/DB/NumberLeaseRepository.php','src/DB/TrackingNumberRepository.php','src/DB/AttributionSessionRepository.php','src/Webhook/TrackSessionController.php','src/Frontend/DniSnippet.php']);
 let protectedCount=0;
 for(const [name,body] of old.files){assert(files.has(name),'Missing baseline file');if(!changed.has(name)){assert(files.get(name).equals(body),'Protected baseline changed: '+name);protectedCount++;}}
 for(const [name,body] of files){
@@ -40,9 +40,15 @@ const manifest=files.get('RELEASE-MANIFEST.sha256').toString().trim().split(/\r?
 assert(manifest.length===files.size-1,'Manifest count');
 const seen=new Set();
 for(const line of manifest){const m=line.match(/^([a-f0-9]{64})\s+\.\/(.+)$/);assert(m&&!seen.has(m[2]),'Manifest format/duplicate');seen.add(m[2]);assert(files.has(m[2])&&sha(files.get(m[2]))===m[1],'Manifest hash');}
+const prior=readZip('siteengine-call-bridge-0.1.1-webhook-layout-review-20261027.zip');
+assert(sha(prior.bytes)==='ad202e02748cab8dcd779790d60a1fb9f97d4401ac4909fd3b00896d9edeb993','Installed review archive changed');
+const bounded=new Set(['siteengine-call-bridge.php','README.md','CHANGELOG.md','RELEASE-MANIFEST.sha256','src/DB/NumberLeaseRepository.php','src/DB/TrackingNumberRepository.php','src/DB/AttributionSessionRepository.php','src/Webhook/TrackSessionController.php','src/Frontend/DniSnippet.php']);
+let priorProtected=0;for(const [name,body] of prior.files){if(!bounded.has(name)){assert(files.get(name).equals(body),'Out-of-scope installed file changed: '+name);priorProtected++;}}
+assert(files.size===prior.files.size,'Unexpected package addition/removal');
+console.log('PASS '+priorProtected+' files unchanged from installed f763b3c review; changes bounded to lease/session/DNI and release metadata.');
 const main=files.get('siteengine-call-bridge.php').toString();
-assert(main.includes("define('SECB_VERSION', '0.1.1')")&&main.includes('Version:           0.1.1')&&main.includes("define('SECB_DB_VERSION', '1.0.0')"),'Version coherence');
-assert(files.get('CHANGELOG.md').toString().includes('## 0.1.1'),'Changelog version');
+assert(main.includes("define('SECB_VERSION', '0.1.2')")&&main.includes('Version:           0.1.2')&&main.includes("define('SECB_DB_VERSION', '1.0.0')"),'Version coherence');
+assert(files.get('CHANGELOG.md').toString().includes('## 0.1.2'),'Changelog version');
 let js=files.get('src/Frontend/DniSnippet.php').toString().split('<script id="secb-dni-script">')[1].split('</script>')[0],n=0;
 js=js.replace(/<\?php[\s\S]*?\?>/g,()=>['"https://fixture.invalid/"','[]','90'][n++]);assert(n===3,'JS placeholders');new vm.Script(js);
 const php=[...files].filter(([name])=>name.endsWith('.php'));assert(php.length===47&&php.every(([,b])=>b.subarray(0,5).toString()==='<?php'),'PHP count/opening');

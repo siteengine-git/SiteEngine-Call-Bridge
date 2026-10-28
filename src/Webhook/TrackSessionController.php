@@ -40,9 +40,8 @@ final class TrackSessionController
             'client_ip'=>$this->clientIp(),
             'expires_at'=>$expires,
         ];
-        try{(new AttributionSessionRepository())->upsert($data);}catch(\Throwable $e){Logger::error('session_upsert_failed',['error'=>$e->getMessage()]);}
 
-        try{$lease=(new NumberLeaseRepository())->acquire($source,$sid);}catch(\Throwable $e){Logger::error('lease_acquire_failed',['error'=>$e->getMessage(),'source'=>$source]);$lease=null;}
+        try{$lease=(new NumberLeaseRepository())->acquire($source,$sid,static fn(): bool => (new AttributionSessionRepository())->upsert($data)!==false);}catch(\Throwable $e){Logger::error('lease_acquire_failed',['error'=>$e->getMessage(),'source'=>$source]);$lease=null;}
         if(!$lease) return new WP_REST_Response(['session_id'=>$sid,'tracking_number'=>null,'pool_exhausted'=>true,'ttl_days'=>Config::sessionTtlDays()],200);
         $e164=(string)$lease['tracking_number'];
         return new WP_REST_Response(['session_id'=>$sid,'tracking_number'=>$e164,'display_phone'=>TrackingNumberResolver::formatForDisplay($e164),'ttl_days'=>Config::sessionTtlDays(),'lease_minutes'=>Config::leaseMinutes()],200);

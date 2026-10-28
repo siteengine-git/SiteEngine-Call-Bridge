@@ -101,7 +101,7 @@ $passed=0;$failed=0;
 function check($ok,$name){global $passed,$failed;if($ok){++$passed;echo "PASS $name\n";}else{++$failed;echo "FAIL $name\n";}}
 function capture($fn){ob_start();try{$fn();return ob_get_contents();}finally{ob_end_clean();}}
 function denied($fn){try{$fn();return false;}catch(RuntimeException $e){return $e->getMessage()==='permission-denied';}}
-check(SECB_VERSION==='0.1.1'&&SECB_DB_VERSION==='1.0.0','candidate release and unchanged DB metadata');
+check(SECB_VERSION==='0.1.2'&&SECB_DB_VERSION==='1.0.0','candidate release and unchanged DB metadata');
 check(FixtureInstaller::$boots===1,'boot still invokes installer once (isolated adapter, not real migration)');
 check(isset($GLOBALS['hooks']['siteengine_modules']),'actual plugin boot registers module before admin_menu');
 check(isset($GLOBALS['hooks']['admin_post_secb_save_number'],$GLOBALS['hooks']['admin_post_secb_delete_number']),'existing save/delete action hooks remain');

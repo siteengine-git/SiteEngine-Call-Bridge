@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.2 - 2026-10-28 (unaccepted candidate; not deployed)
+
+- Fail closed on allocation-critical read/write errors and verify persisted renewal expiry, including legitimate zero-row updates.
+- Serialize all sources/sessions within a database/site-prefix allocation lock; wait at most two seconds and release in finally. No schema change; DB stays 1.0.0.
+- Revalidate current number eligibility; preserve source-pinned reservations until expiry. Valid leases remain sticky across pool-size changes.
+- Guard attribution upsert under the allocation lock so rejected source transitions preserve attribution; check session persistence before issuing/renewing a lease.
+- Refresh ordinary DNI telephone links after replacement renewal while retaining labels, unrelated-link protection and restoration.
+- Preserve historical reproducers, extend local contract/controller/browser fixtures, and repin the prepared-only Alma plan.
+
 ## 0.1.1 - 2026-10-27 (webhook layout review revision; not deployed)
 
 - Webhook URLs use stacked, CB-scoped endpoint sections with selectable single-line text and keyboard-focusable horizontal scrolling at narrow widths. Endpoint values, methods, escaping and navigation are unchanged.
