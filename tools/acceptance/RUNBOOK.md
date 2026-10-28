@@ -26,8 +26,12 @@ All run/harness/subcase directories 0700, files 0600, existing site owner/group.
 If any intended path already exists, preserve it; do not seed again or overwrite
 evidence. The operator must review collisions, not delete them to proceed.
 
-After new authorization only, place these exact pinned files under `RUN/harness/`:
-`lease-sql.php`, `browser-fixtures.php` (together, since it requires its sibling).
+After Helper re-review and explicit server resumption only, stage the five PHP
+files listed in STAGE-S-MANIFEST.sha256 under RUN/harness/, together with the
+runbook and manifest. Verify the independently delivered manifest hash, then
+sha256sum -c from that private directory before PHP includes. Stage S does not
+need browser-fixtures.php/dni-page.php. A later separately authorized Stage B needs
+those browser files AND all five SQL harness dependencies. No file has autorun.
 Temporary protected page: `SITE_ROOT/secb-acceptance-20261027-01/index.php`, copied
 from `dni-page.php`; directory 0700/file 0600, same site owner. No source plugin
 replacement or second editable source home. Record copied hashes privately.
@@ -50,6 +54,147 @@ coordinator lock. Normal WP bootstrap retains Installer/GC side effects.
 The harness was linted locally; its real WP/SQL/process privileges are untested.
 Missing CREATE/ALTER/DROP/CHECKSUM/proc_open privilege must be reported exactly;
 do not expand privileges, install a database or fall back to application exploits.
+
+
+## Stage S tooling correction — 2026-10-28, PAUSED FOR HELPER REVIEW
+
+The runtime pin, ZIP and package manifest remain the exact 0.1.2 candidate. These
+are separate acceptance-tooling changes. No local test grants server resumption.
+
+The pure verdict now requires complete ready/result/process/persisted-state and
+live-lock evidence. Lock-timeout: two null returns, zero total/active rows. Last-slot
+and same-session: one winner, one null, one total row and one active/unexpired row.
+Returned lease ID/session/source/number ID/phone/expiry/status/leased_at must match
+that row. All five fixture definitions/IDs and duplicate ownership checks are
+mandatory; malformed, failed, missing or incomplete evidence fails.
+
+Workers publish complete JSON, check lock ownership after the application call,
+then KEEP THEIR CONNECTIONS OPEN at a finish barrier. The supervisor verifies the
+exact IDs in an ID-only information_schema.PROCESSLIST read, checks/releases its
+owned timeout-case lock and performs a GET_LOCK(...,0)/RELEASE_LOCK probe from its
+own independent connection while both workers remain open. It then permits exit.
+Only after two known successful exits and final state/release checks is a verdict
+published. Result-file-then-nonzero/unknown exit, timeout or termination fails.
+The first real exit is retained across status/close calls; -1 is never success.
+See [PHP status semantics](https://www.php.net/manual/en/function.proc-get-status.php)
+and [close semantics](https://www.php.net/manual/en/function.proc-close.php).
+
+No foreign lock is released. SQL query failure, unknown ownership, unconfirmed
+release or a changed connection blocks. Reset/cleanup additionally refuse missing
+or unclosed race-process cessation records. A fatal interruption before recording
+cessation may require scoped operator review; do not forge records to enable DROP.
+Cleanup now independently confirms absence of exactly the two owned shadow tables.
+
+Limits: session-only SQL timeout 5s; ready barrier 10s; allocator wait 2s; post-go
+result/finish/exit/finalization deadline 8s. Workers wait at most 10s for finish.
+Own-child termination uses 1s grace then kill and 1s observation. Private stdout/
+stderr bounded at 1MiB/file during observation, JSON 64KiB. Each sequential case
+has a checked 30s deadline and finite SQL calls under the same 5s statement bound.
+No process/filesystem/SQL timeout is a universal guarantee over arbitrary WP hooks
+or descendants. Unknown stopped-worker state refuses fixture reset/cleanup.
+
+### Exact future commands, including executable sequential assertions
+
+NOT TO BE RUN DURING THE LOCAL TOOLING TASK. Use Windows PowerShell from the
+canonical CB checkout, after deployment/quiescence and this tooling pass re-review.
+Run is derived from the EXISTING profile; no new connection method or profile.
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$Project = (Get-Location).Path
+$Profile = 'D:\SiteEngine\Plugins\site-access.json'
+$Runner = 'D:\SiteEngine\Agency\AI-Workspace\Invoke-Site-Wp.ps1'
+$p = Get-Content -LiteralPath $Profile -Raw | ConvertFrom-Json
+$OwnerHome = $p.root.TrimEnd('/') -replace '/[^/]+$',''
+$Run = $OwnerHome + '/.secb-acceptance/cb-lease-dni-012-20261028-01'
+$Requests = Join-Path $Project '.secrets\stage-s-reviewed-requests-20261028'
+if (Test-Path -LiteralPath $Requests) { throw 'Preserve existing request evidence' }
+New-Item -ItemType Directory -Path $Requests | Out-Null
+$script:CbRequestOrdinal = 0
+function Invoke-CbStageS {
+    param(
+        [ValidateSet('seed-clones','reset-clone-leases','race','sequential','inspect','cleanup-clones')][string]$Mode,
+        [string]$Case = ''
+    )
+    if ($Mode -eq 'race' -and $Case -notmatch '^(last-slot|same-session|lock-timeout)-[0-9]{2}$') { throw 'Invalid race case' }
+    if ($Mode -eq 'sequential' -and $Case -notin @('renewal','expiry','pool','source','deactivation','sticky')) { throw 'Invalid sequential case' }
+    if ($Run -notmatch '^/[A-Za-z0-9_./-]+$') { throw 'Unexpected run path' }
+    $CaseLiteral = if ($Case) { "'" + $Case + "'" } else { 'null' }
+    $Body = @'
+require '__RUN__/harness/lease-sql.php';
+$result = secb_accept_sql('__MODE__', '__RUN__', true, __CASE__);
+echo json_encode($result, JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR), "\n";
+if (in_array('__MODE__', ['race','sequential'], true) && (($result['pass'] ?? null) !== true)) {
+    WP_CLI::error('Stage S assertion failed; stop further cases and preserve evidence.');
+}
+if ('__MODE__' === 'cleanup-clones' && (($result['shadow_tables_absent'] ?? null) !== true)) {
+    WP_CLI::error('Owned shadow-table removal was not verified.');
+}
+'@
+    $Body = $Body.Replace('__RUN__',$Run).Replace('__MODE__',$Mode).Replace('__CASE__',$CaseLiteral)
+    $script:CbRequestOrdinal++
+    $Request = Join-Path $Requests ('{0:D3}-{1}-{2}.php' -f $script:CbRequestOrdinal,$Mode,$Case)
+    $Bytes = [Text.UTF8Encoding]::new($false).GetBytes($Body)
+    $Stream = [IO.File]::Open($Request,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write)
+    try { $Stream.Write($Bytes,0,$Bytes.Length) } finally { $Stream.Dispose() }
+    & $Runner -SiteProfile $Profile -PhpFile $Request -TimeoutSeconds 60
+}
+Invoke-CbStageS -Mode seed-clones
+foreach ($Kind in @('last-slot','same-session')) {
+    foreach ($Round in 1..20) {
+        Invoke-CbStageS -Mode reset-clone-leases
+        Invoke-CbStageS -Mode race -Case ('{0}-{1:D2}' -f $Kind,$Round)
+    }
+}
+Invoke-CbStageS -Mode reset-clone-leases
+Invoke-CbStageS -Mode race -Case 'lock-timeout-01'
+foreach ($Case in @('renewal','expiry','pool','source','deactivation','sticky')) {
+    Invoke-CbStageS -Mode reset-clone-leases
+    Invoke-CbStageS -Mode sequential -Case $Case
+}
+Invoke-CbStageS -Mode inspect
+Invoke-CbStageS -Mode cleanup-clones
+```
+
+Each race/sequential command explicitly requires pass===true through a nonzero
+WP-CLI error. A failure stops further cases. Preserve summary/evidence/stderr; only
+when cessation is confirmed may the operator call Invoke-CbStageS -Mode cleanup-clones.
+If ownership/cessation guards refuse, retain clones for review. No automatic
+catch-and-continue, retry, broad DROP/DELETE or foreign lock release. Final cleanup
+reports shadow_tables_absent and original_snapshot_equal separately; explain a
+background/GC delta rather than restoring whole tables/options/global cron.
+
+Prepared sequential implementations in stage-s-sequential.php:
+
+| Case | Explicit checks / allowed clone-only operations |
+|---|---|
+| renewal | Acquire alpha; shorten only its captured lease ID to five seconds in future; renew on an independent connection, require same persisted ID, later stored expiry, one row. |
+| expiry | Expire captured ID only; independent session gets a new ID; old row expired and released_at populated. |
+| pool | Two distinct large-pool winners then null; never borrow small pool. Beta exhausts its sole row without borrowing alpha. |
+| source | Same-session beta rejection preserves exact original alpha reservation/expiry. Only after captured-ID expiry may beta allocate its own recorded number. |
+| deactivation | Deactivate recorded alpha number ID; require null and exact unchanged reservation; restore only its active flag with readback. |
+| sticky | Bounded SID selection leases large-pool row 4; move only recorded row 3 to small pool to make that pool largest; row 4 stays sticky before expiry, row 3/5 selected after expiry; restore only row 3 pool field. |
+
+Every returned winner is read back by ID with fixture/source/session/expiry checks.
+Each allocation checks application-lock release while its connection is still
+open and an independent subsequent acquisition/release. Finally restores original
+wpdb object/prefix and closes only the new peer connection. All cases verify
+fixture members and no duplicate live ownership. On failure edited clones/evidence
+remain for marker-verified cleanup; real configuration is never restored wholesale.
+Ordinary finally is not a claim of fatal/kill/hook acceptance; native review remains.
+
+### Local reproduction / staging
+
+```powershell
+& $Php -n tests/stage-s-tooling.php
+```
+
+Use an existing local PHP executable. SQL arrays/helper responses are SIMULATED;
+only PHP subprocess/exit handling is real local execution. No native concurrency,
+WordPress bootstrap, Alma request or SQL fixtures. Stage S requires the five PHP
+files in STAGE-S-MANIFEST.sha256 plus this runbook; compare its independently
+provided SHA-256, then verify file hashes before execution. The local regression
+test is not a server runtime dependency. Original counterexamples remain preserved.
 
 ## Allocation lock and transition contract (0.1.2)
 

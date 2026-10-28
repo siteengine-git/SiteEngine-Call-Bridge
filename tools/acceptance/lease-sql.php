@@ -2,6 +2,9 @@
 /** PREPARED ONLY. Include through the shared WP runner; no automatic execution. */
 declare(strict_types=1);
 defined('ABSPATH') || exit;
+require_once __DIR__.'/stage-s-verdict.php';
+require_once __DIR__.'/stage-s-process.php';
+require_once __DIR__.'/stage-s-race.php';
 
 function secb_accept_json(string $path,array $data,bool $new=false):void {
     if(file_exists($path)&&(is_link($path)||!is_file($path)||(fileperms($path)&0777)!==0600||fileowner($path)!==posix_geteuid()))throw new RuntimeException('Refuse existing unowned/unrestricted evidence path');
@@ -57,10 +60,17 @@ function secb_accept_worker(string $run,string $case,string $label,bool $write=f
     $plan=secb_accept_plan($run);$state=secb_accept_load($run,$plan);secb_accept_own_tables($state);if($state['phase']!=='ready')throw new RuntimeException('SQL fixtures are not ready');
     $kind=secb_accept_case($case);if(!in_array($label,['a','b'],true))throw new RuntimeException('Unknown worker');
     $gate=$run.'/'.$case;$sid='cbaccept-20261027-01-'.$case.($kind==='same-session'?'':'-'.$label);$source='cbaccept_20261027_'.($kind==='same-session'&&$label==='b'?'beta':'alpha');
-    $connection=(int)$wpdb->get_var('SELECT CONNECTION_ID()');if($connection<=0||$wpdb->last_error!=='')throw new RuntimeException('Cannot establish native SQL connection ID');secb_accept_json($gate.'/ready-'.$label.'.json',['connection'=>$connection],true);
+    $connection=secb_s_connection();$expected=secb_s_expected($case,$label);
+    secb_s_publish($gate.'/ready-'.$label.'.json',$expected+['connection'=>$connection]);
     $deadline=microtime(true)+10;while(!file_exists($gate.'/go')){if(microtime(true)>$deadline)throw new RuntimeException('Barrier timeout');usleep(10000);}
     $start=microtime(true);$result=secb_accept_in_fixture($state,fn()=>(new \SiteEngine\CallBridge\DB\NumberLeaseRepository())->acquire($source,$sid));
-    secb_accept_json($gate.'/result-'.$label.'.json',['connection'=>$connection,'session'=>$sid,'source'=>$source,'started'=>$start,'elapsed'=>microtime(true)-$start,'lease'=>$result],true);
+    $lock=secb_accept_in_fixture($state,fn()=>(new \SiteEngine\CallBridge\DB\NumberLeaseRepository())->allocationLockName());
+    $after=secb_s_connection();if($after!==$connection)throw new RuntimeException('Worker SQL session changed');
+    $owner=secb_s_owner($lock);if($owner===$connection)throw new RuntimeException('Application allocation lock leaked');
+    secb_s_publish($gate.'/result-'.$label.'.json',$expected+['connection'=>$connection,'connection_after'=>$after,'started'=>$start,'elapsed'=>microtime(true)-$start,'lease'=>$result,'lock'=>['name'=>$lock,'owner_after'=>$owner,'checked_while_open'=>true]]);
+    // Retain this actual SQL connection while the supervisor probes from another.
+    $deadline=microtime(true)+10;while(!file_exists($gate.'/finish')){if(microtime(true)>$deadline)throw new RuntimeException('Open-connection release probe timeout');usleep(10000);}
+    if(secb_s_connection()!==$connection||secb_s_owner($lock)===$connection)throw new RuntimeException('Worker final SQL identity/release failed');
 }
 
 /** All mutation modes default denied. This file alone never runs a test. */
@@ -85,41 +95,15 @@ function secb_accept_sql_operation(string $mode,string $run,bool $write=false,?s
         $state['phase']='ready';secb_accept_json($run.'/sql-state.json',$state);return ['phase'=>'ready','number_rows'=>count($state['ids']),'tables'=>$state['tables']];
     }
     $state=secb_accept_load($run,$plan);secb_accept_own_tables($state);
-    if($mode==='reset-clone-leases'){secb_accept_query('DELETE FROM `'.$state['tables'][1].'`');return ['reset'=>'owned clone leases only; sequence unchanged'];}
-    if($mode==='race'){
-        $kind=secb_accept_case((string)$case);
-        if((int)secb_accept_rows('SELECT COUNT(*) n FROM `'.$state['tables'][1].'`')[0]['n']!==0)throw new RuntimeException('Reset owned clone leases explicitly before race');
-        $gate=$run.'/'.$case;if(file_exists($gate)||!mkdir($gate,0700))throw new RuntimeException('Preserve existing case evidence');
-        $lock=secb_accept_in_fixture($state,fn()=>(new \SiteEngine\CallBridge\DB\NumberLeaseRepository())->allocationLockName());$held=false;$children=[];
-        try{
-            if((int)$wpdb->get_var($wpdb->prepare('SELECT IS_FREE_LOCK(%s)',$lock))!==1)throw new RuntimeException('Fixture allocation lock collision');
-            if($kind==='lock-timeout'){$held=(int)$wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s,0)',$lock))===1;if(!$held)throw new RuntimeException('Cannot hold test lock');}
-            foreach(['a','b'] as $label){
-                $out=$gate.'/stdout-'.$label.'.txt';$err=$gate.'/stderr-'.$label.'.txt';foreach([$out,$err] as $f){$h=fopen($f,'x');if(!$h)throw new RuntimeException('Evidence collision');fclose($h);chmod($f,0600);}
-                $code='require '.var_export(__FILE__,true).'; secb_accept_worker('.var_export($run,true).','.var_export($case,true).','.var_export($label,true).',true);';
-                $p=proc_open(['/usr/local/lsws/lsphp83/bin/php','/usr/bin/wp','--path='.rtrim(ABSPATH,'/'),'eval',$code],[0=>['file','/dev/null','r'],1=>['file',$out,'a'],2=>['file',$err,'a']],$pipes,$run);
-                if(!is_resource($p))throw new RuntimeException('Worker start failed');$children[]=$p;
-            }
-            $deadline=microtime(true)+10;while(!file_exists($gate.'/ready-a.json')||!file_exists($gate.'/ready-b.json')){if(microtime(true)>$deadline)throw new RuntimeException('Worker readiness timeout; inspect private stderr');usleep(10000);}
-            $a=json_decode(file_get_contents($gate.'/ready-a.json'),true);$b=json_decode(file_get_contents($gate.'/ready-b.json'),true);if($a['connection']===$b['connection'])throw new RuntimeException('Workers must have independent SQL connections');
-            $go=fopen($gate.'/go','x');fclose($go);chmod($gate.'/go',0600);
-            $deadline=microtime(true)+8;do{$running=false;foreach($children as $p)$running=proc_get_status($p)['running']||$running;if(!$running)break;if(microtime(true)>$deadline)throw new RuntimeException('Race execution timeout');usleep(10000);}while(true);
-            $results=[];foreach(['a','b'] as $label){$file=$gate.'/result-'.$label.'.json';if(!is_file($file))throw new RuntimeException('Worker failed; inspect private stderr');$results[]=json_decode(file_get_contents($file),true,512,JSON_THROW_ON_ERROR);}
-            $leases=secb_accept_rows('SELECT session_id,tracking_number_id,status,expires_at FROM `'.$state['tables'][1].'`');
-            $duplicates=secb_accept_rows('SELECT tracking_number_id,COUNT(*) n FROM `'.$state['tables'][1]."` WHERE status='active' AND expires_at>UTC_TIMESTAMP() GROUP BY tracking_number_id HAVING COUNT(*)>1");
-            $active=(int)secb_accept_rows('SELECT COUNT(*) n FROM `'.$state['tables'][1]."` WHERE status='active' AND expires_at>UTC_TIMESTAMP()")[0]['n'];
-            $duplicateSessions=secb_accept_rows('SELECT session_id,COUNT(*) n FROM `'.$state['tables'][1]."` WHERE status='active' AND expires_at>UTC_TIMESTAMP() GROUP BY session_id HAVING COUNT(*)>1");
-            $identity=true;foreach($results as $r)if($r['lease']!==null&&($r['lease']['source']!==$r['source']||$r['lease']['session_id']!==$r['session']))$identity=false;
-            $won=count(array_filter($results,fn($r)=>$r['lease']!==null));$pass=$duplicates===[]&&$duplicateSessions===[]&&$identity&&($kind==='lock-timeout'?$won===0:($kind==='same-session'?$active===1&&$won===1&&count($leases)===1:$won===1&&count($leases)===1));
-            $summary=['case'=>$case,'pass'=>$pass,'distinct_connections'=>true,'identity_matches'=>$identity,'winners'=>$won,'lease_rows'=>count($leases),'active_rows'=>$active,'duplicate_number_rows'=>count($duplicates),'duplicate_session_rows'=>count($duplicateSessions)];secb_accept_json($gate.'/summary.json',$summary,true);return $summary;
-        }finally{
-            foreach($children as $p){if(proc_get_status($p)['running']){proc_terminate($p);$end=microtime(true)+1;while(proc_get_status($p)['running']&&microtime(true)<$end)usleep(10000);if(proc_get_status($p)['running'])proc_terminate($p,9);}proc_close($p);}if($held)$wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)',$lock));
-        }
-    }
+    if($mode==='reset-clone-leases'){secb_s_no_inflight_workers($run);secb_accept_query('DELETE FROM `'.$state['tables'][1].'`');return ['reset'=>'owned clone leases only; sequence unchanged'];}
+    if($mode==='race')return secb_s_race($state,$run,(string)$case);
+    if($mode==='sequential'){require_once __DIR__.'/stage-s-sequential.php';return secb_s_sequential($state,$run,(string)$case);}
     if($mode==='inspect')return ['number_rows'=>secb_accept_rows('SELECT COUNT(*) n FROM `'.$state['tables'][0].'`')[0]['n'],'lease_rows'=>secb_accept_rows('SELECT COUNT(*) n FROM `'.$state['tables'][1].'`')[0]['n'],'original_after'=>secb_accept_snapshot($state['root_prefix']),'original_before'=>$state['before']];
     if($mode==='cleanup-clones'){
+        secb_s_no_inflight_workers($run);
         foreach(array_reverse($state['tables']) as $table)secb_accept_query("DROP TABLE `$table`");
-        $after=secb_accept_snapshot($state['root_prefix']);secb_accept_json($run.'/sql-after.json',$after,true);$state['phase']='cleaned';secb_accept_json($run.'/sql-state.json',$state);return ['original_snapshot_equal'=>$after===$state['before'],'evidence_retained'=>true];
+        foreach($state['tables'] as $table)if(secb_accept_rows($wpdb->prepare('SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=%s',$table)))throw new RuntimeException('Shadow-table removal unconfirmed');
+        $after=secb_accept_snapshot($state['root_prefix']);secb_accept_json($run.'/sql-after.json',$after,true);$state['phase']='cleaned';secb_accept_json($run.'/sql-state.json',$state);return ['original_snapshot_equal'=>$after===$state['before'],'shadow_tables_absent'=>true,'evidence_retained'=>true];
     }
     throw new RuntimeException('Unknown mode');
 }
