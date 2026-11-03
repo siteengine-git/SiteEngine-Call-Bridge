@@ -1,19 +1,14 @@
-# SiteEngine Call Bridge 0.1.2 — unaccepted lease/DNI candidate
+# SiteEngine Call Bridge 0.1.3 — development denial-response candidate
 
-Not deployed or accepted. Database version remains 1.0.0; no schema migration.
-Existing 0.1.0/0.1.1 archives and historical failure evidence are preserved.
+Packages the narrow permission-status repair approved for Alma development
+installation. Tracking Numbers render/save/delete capability denials explicitly
+return HTTP 403. Existing capability, nonce ordering and routing remain unchanged.
+Database version stays 1.0.0; no schema migration or provider change.
 
-Lease allocation now fails closed on database uncertainty, checks renewal persistence,
-revalidates number eligibility, and keeps unexpired reservations source-pinned.
-Attribution is saved under the same site allocation lock after transition validation.
-Valid leases remain sticky across pool-size changes; after expiry, current pool rules apply.
-DNI replacement renewals refresh ordinary business links using their remembered original
-phone, preserving original text/href, labels, unrelated links and safe restoration.
-
-The deployed 0.1.1 webhook layout passed installed administrator desktop/narrow checks.
-This new runtime candidate needs separate review, deployment authorization and native
-SQL/browser acceptance. Local mocks do not establish SQL exclusivity or live calling.
-Authenticated non-administrator denial and all telephony acceptance remain pending.
+The retained 0.1.2 allocator/DNI behavior and archives are preserved. Completed
+installed DNI and permission evidence is retained privately. Independent-browser
+acceptance, cache-HIT coverage, live telephony and authoritative consent linkage
+remain separate limits; this package does not establish them or stable release.
 
 ## Base integration and read-only setup
 
@@ -46,7 +41,7 @@ Run tests/run.ps1 with -Php pointing to an existing PHP 8.1+ executable and -Bas
 pointing to the original Base 2.2.2 ZIP (the runner checks its SHA-256). It loads original
 Base classes into isolated WordPress/DB fixtures, not an installed website.
 Run tools/package-candidate.ps1 once to build the allow-listed installable artifact,
-then node tools/verify-candidate.cjs. Existing archives are never overwritten.
+then node tools/verify-denial-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
 The original tools/verify-baseline.cjs intentionally targets the unchanged 0.1.0 source
 snapshot; use the candidate verifier for this checkout. Tests/tools/reports are excluded
 from the installable ZIP.

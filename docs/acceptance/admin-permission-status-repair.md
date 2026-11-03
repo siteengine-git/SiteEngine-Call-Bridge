@@ -1,5 +1,10 @@
 # Unaccepted permission-status correction
 
+Historical repair-checkpoint record. The owning Helper subsequently approved
+0.1.3 development packaging/installation; see
+`verification/0.1.3-denial-candidate.md` for the successor package. Installed
+verification remains separately recorded in local private status.
+
 Installed 0.1.2 denies a subscriber's Tracking Numbers save/delete actions before
 nonce processing or repository access. Native HTTPS testing nevertheless observed
 HTTP 500 with the fixed `Insufficient permissions.` message. WordPress defaults

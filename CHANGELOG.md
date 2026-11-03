@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 - 2026-11-03 (development candidate; not stable)
+
+- Return HTTP 403 explicitly from the existing Tracking Numbers render/save/delete capability denials. Authorization, nonce ordering, repository behavior and fixed denial text are unchanged.
+- Package the approved narrow denial-response repair; no schema, lease/DNI, provider, recording or configuration change. Database version stays 1.0.0.
+- Installed permission verification and independent-browser acceptance are recorded separately; packaging does not imply acceptance.
+
+
 ## 0.1.2 - 2026-10-28 (unaccepted candidate; not deployed)
 
 - Fail closed on allocation-critical read/write errors and verify persisted renewal expiry, including legitimate zero-row updates.
