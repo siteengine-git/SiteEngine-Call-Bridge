@@ -32,6 +32,9 @@ routing requires further design review; do not override the gate during acceptan
 DB credentials and table_prefix are parsed from unique unconditional top-level
 literal wp-config declarations in memory only. No eval, include, credentials in
 argv/evidence, credential copy, permanent settings or new credential facility.
+Unconditional literal declarations after a completed top-level block are supported;
+conditional, nested and unbraced-else declarations still reject. This corrects the
+November 3 native pre-connection parser failure without evaluating configuration.
 Dynamic/conditional/duplicate or complex literal config stops for review. The
 existing SECB_CONFIG_FILE path must be the expected external file and readable;
 its contents are NOT executed or copied. SQL experiment lease timing is explicitly

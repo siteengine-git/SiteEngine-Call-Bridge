@@ -66,7 +66,7 @@ function secb_standalone_config(string $text):array {
     $t=array_values(array_filter($tokens,static fn($t)=>!is_array($t)||!in_array($t[0],[T_WHITESPACE,T_COMMENT,T_DOC_COMMENT],true)));
     for($i=0;$i<count($t);$i++){
         if($t[$i]==='{')$depth++;if($t[$i]==='}')$depth--;
-        $top=$depth===0&&($i===0||$t[$i-1]===';'||(is_array($t[$i-1])&&$t[$i-1][0]===T_OPEN_TAG));
+        $top=$depth===0&&($i===0||$t[$i-1]===';'||$t[$i-1]==='}'||(is_array($t[$i-1])&&$t[$i-1][0]===T_OPEN_TAG));
         if(is_array($t[$i])&&$t[$i][0]===T_STRING&&strtolower($t[$i][1])==='define'&&($t[$i+1]??null)==='('&&is_array($t[$i+2]??null)&&$t[$i+2][0]===T_CONSTANT_ENCAPSED_STRING){$name=$literal($t[$i+2][1]);if(!in_array($name,['DB_NAME','DB_USER','DB_PASSWORD','DB_HOST','SECB_CONFIG_FILE'],true))continue;if(!$top||($t[$i+3]??null)!==','||!is_array($t[$i+4]??null)||$t[$i+4][0]!==T_CONSTANT_ENCAPSED_STRING||($t[$i+5]??null)!==')'||isset($values[$name]))throw new RuntimeException('nonliteral_or_duplicate_config');$values[$name]=$literal($t[$i+4][1]);}
         if(is_array($t[$i])&&$t[$i][0]===T_VARIABLE&&$t[$i][1]==='$table_prefix'){if(!$top||($t[$i+1]??null)!=='='||!is_array($t[$i+2]??null)||$t[$i+2][0]!==T_CONSTANT_ENCAPSED_STRING||($t[$i+3]??null)!==';'||$prefix!==null)throw new RuntimeException('nonliteral_or_duplicate_prefix');$prefix=$literal($t[$i+2][1]);}
     }

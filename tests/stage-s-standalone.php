@@ -12,7 +12,7 @@ $child= <<<'PHP'
 $project=dirname(__DIR__,2);$run=str_replace('\\','/',__DIR__);$candidate=$run.'/candidate/siteengine-call-bridge';
 require $project.'/tools/acceptance/standalone/candidate-loader.php';
 define('ABSPATH','fixture/');define('ARRAY_A','ARRAY_A');define('DB_NAME','fixture_db');
-$mode=$argv[1];$expectReject=!in_array($mode,['load','restore-prefix','config-literals','no-candidate-boot','worker-origins','restore-global'],true);$rejected=false;$restore=null;
+$mode=$argv[1];$expectReject=!in_array($mode,['load','restore-prefix','config-literals','no-candidate-boot','worker-origins','restore-global','config-after-block'],true);$rejected=false;$restore=null;
 try {
  if($mode==='changed-zip'){file_put_contents($run.'/changed.zip',file_get_contents($run.'/candidate.zip').'changed');secb_standalone_zip($run.'/changed.zip');}
  elseif($mode==='preloaded'){require $project.'/src/Support/Config.php';secb_standalone_load($run);}
@@ -28,6 +28,12 @@ try {
  elseif(in_array($mode,['changed-payload','changed-entry'],true)){
   $p=$candidate.'/'.($mode==='changed-entry'?'siteengine-call-bridge.php':'src/DB/NumberLeaseRepository.php');$old=file_get_contents($p);$restore=static fn()=>file_put_contents($p,$old);file_put_contents($p,'<?php file_put_contents(__DIR__."/BOOTED", "bad");');secb_standalone_load($run);
  }
+ elseif($mode==='config-after-block'){
+  $v=secb_standalone_config('<?php define("DB_NAME","fictional"); define("DB_USER","fixture"); define("DB_PASSWORD","not-a-secret"); define("DB_HOST","localhost"); $table_prefix="fixture_"; if(!defined("ABSPATH")){define("ABSPATH",__DIR__."/");} define("SECB_CONFIG_FILE","/fixture/.secrets/siteengine-call-bridge.php");');
+  if($v['SECB_CONFIG_FILE']!=='/fixture/.secrets/siteengine-call-bridge.php')throw new RuntimeException('after_block_literal_parse');
+ }
+ elseif($mode==='config-nested-after-block'){secb_standalone_config('<?php if(true){if(false){} define("DB_NAME","fictional");}');}
+ elseif($mode==='config-else-after-block'){secb_standalone_config('<?php if(false){} else define("DB_NAME","fictional");');}
  elseif($mode==='config-expression'){secb_standalone_config('<?php define("DB_NAME",getenv("DB_NAME"));');}
  elseif($mode==='config-duplicate'){secb_standalone_config('<?php define("DB_NAME","a"); define("DB_NAME","b");');}
  elseif($mode==='config-conditional'){secb_standalone_config('<?php if(false){define("DB_NAME","fictional");}');}
@@ -70,7 +76,7 @@ PHP;
 file_put_contents($base.'/child.php',$child);
 $pass=0;$fail=0;
 function standalone_check(bool $ok,string $name):void {global $pass,$fail;echo ($ok?'PASS ':'FAIL ').$name."\n";$ok?$pass++:$fail++;}
-foreach(['load','no-candidate-boot','preloaded','wrong-origin','mixed-origin','installer-class','plugin-class','hook-api','autoload','bootstrap-include','changed-zip','changed-payload','changed-entry','config-expression','config-duplicate','config-conditional','config-unbraced','config-literals','worker-origins','worker-mixed','worker-missing','restore-global','restore-prefix','wrong-prefix','wrong-target-action','outside-scope'] as $case){
+foreach(['load','no-candidate-boot','preloaded','wrong-origin','mixed-origin','installer-class','plugin-class','hook-api','autoload','bootstrap-include','changed-zip','changed-payload','changed-entry','config-expression','config-duplicate','config-conditional','config-unbraced','config-literals','config-after-block','config-nested-after-block','config-else-after-block','worker-origins','worker-mixed','worker-missing','restore-global','restore-prefix','wrong-prefix','wrong-target-action','outside-scope'] as $case){
  $h=proc_open([PHP_BINARY,'-n','child.php',$case],[0=>['pipe','r'],1=>['file',$base.'/'.$case.'.json','w'],2=>['file',$base.'/'.$case.'.err','w']],$pipes,$base);fclose($pipes[0]);$p=secb_s_process_new($h);$deadline=microtime(true)+5;
  while(secb_s_process_poll($p)&&microtime(true)<$deadline)usleep(10000);if($p['running']){$p['timed_out']=true;secb_s_process_abort($p);} $exit=secb_s_process_close($p);$r=json_decode(file_get_contents($base.'/'.$case.'.json'),true);
  standalone_check($exit['exit_code']===0&&($r['pass']??false),$case.' (real fresh PHP process, no SQL)');
