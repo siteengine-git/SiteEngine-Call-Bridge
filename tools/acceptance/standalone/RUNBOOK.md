@@ -77,7 +77,10 @@ host-key and BatchMode settings; use the established owner PHP execution route.
 
 SITE = registered WordPress root. OWNER_HOME = dirname(SITE).
 RUN = OWNER_HOME/.secb-acceptance/cb-lease-dni-012-standalone-20261028-01
-Owner/group = existing site owner/group. All directories 0700, files 0600.
+Owner/group = existing execution owner/effective group (almas9110:almas9110),
+not the public web root's nobody group. All directories 0700, files 0600.
+November 3 native preflight correction: UID/GID5004 owner is not a member of
+web root GID65534; runner validates posix_getegid without changing permissions.
 Any existing RUN or target path: stop, preserve and review; never reseed/overwrite.
 
 1. Create RUN and RUN/harness outside SITE after checking resolved paths/owner.

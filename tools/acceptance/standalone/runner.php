@@ -10,7 +10,7 @@ function secb_standalone_entry(array $argv):int {
     $allowed=['prepare','audit','plan','worker','seed-clones','reset-clone-leases','race','sequential','inspect','cleanup-clones'];if(!in_array($mode,$allowed,true))throw new RuntimeException('unknown_mode');
     if(!preg_match('~^/[A-Za-z0-9_./-]+$~D',$site)||realpath($site)!==$site||$run!==dirname($site).'/.secb-acceptance/cb-lease-dni-012-standalone-20261028-01'||str_starts_with($run,$site.'/'))throw new RuntimeException('exact_private_run_required');
     if(!function_exists('posix_geteuid')||fileowner($site)!==posix_geteuid())throw new RuntimeException('registered_site_owner_required');
-    secb_standalone_private_tree($run,filegroup($site));
+    secb_standalone_private_tree($run,posix_getegid());
     secb_standalone_tooling(__DIR__,$toolingHash);
     if(realpath(__DIR__)!==$run.'/harness')throw new RuntimeException('harness_outside_run');
     if($mode==='prepare'){
