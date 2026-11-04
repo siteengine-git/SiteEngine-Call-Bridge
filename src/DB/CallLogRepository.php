@@ -7,9 +7,22 @@ final class CallLogRepository
     public function table(): string { global $wpdb; return $wpdb->prefix . 'se_cb_calls'; }
     public function insert(array $data): int|false { global $wpdb; $ok=$wpdb->insert($this->table(),$data,$this->formats($data)); return $ok===false?false:(int)$wpdb->insert_id; }
     public function update(int $id,array $data): bool { global $wpdb; return $wpdb->update($this->table(),$data,['id'=>$id],$this->formats($data),['%d'])!==false; }
-    /** Compare-and-set only the callback fields read by the controller; no retry over a winner. */
-    public function updateIfCurrent(int $id,array $data,array $expected): bool { global $wpdb; $where=['id'=>$id]+$expected;return $wpdb->update($this->table(),$data,$where,$this->formats($data),$this->formats($where))===1; }
-    public function findByCallSid(string $sid): ?array { global $wpdb; $r=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE twilio_call_sid=%s LIMIT 1",$sid),ARRAY_A); return $r?:null; }
+    /** Checked status callers distinguish SQL failure from zero-row contention. */
+    public function updateIfCurrent(int $id,array $data,array $expected,bool $throwOnError=false): bool
+    {
+        global $wpdb;
+        $where=['id'=>$id]+$expected;
+        $result=$wpdb->update($this->table(),$data,$where,$this->formats($data),$this->formats($where));
+        if($throwOnError && $result===false){throw new \RuntimeException('callback_write_failed');}
+        return $result===1;
+    }
+    public function findByCallSid(string $sid,bool $throwOnError=false): ?array
+    {
+        global $wpdb;
+        $r=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE twilio_call_sid=%s LIMIT 1",$sid),ARRAY_A);
+        if($throwOnError && $wpdb->last_error!==''){throw new \RuntimeException('callback_read_failed');}
+        return $r?:null;
+    }
     public function findById(int $id): ?array { global $wpdb; $r=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE id=%d LIMIT 1",$id),ARRAY_A); return $r?:null; }
     public function countQualifyingPriorCalls(string $caller,int $windowDays,int $minDurationSec,?string $excludeSid=null): int
     {

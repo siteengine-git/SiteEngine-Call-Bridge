@@ -40,7 +40,7 @@ final class TwilioStatusController
 
         try {
             $calls = new CallLogRepository();
-            $row = $calls->findByCallSid($callSid);
+            $row = $calls->findByCallSid($callSid, true);
             if ($row === null) {
                 Logger::warn('status_call_not_found', ['call_sid' => $callSid]);
                 WebhookEvents::record(WebhookEvents::STATUS_UNMATCHED, $callSid);
@@ -63,7 +63,7 @@ final class TwilioStatusController
                     $this->emitEmpty();
                     return;
                 }
-                $calls->updateIfCurrent((int) $row['id'], ['call_status'=>$status], $expected);
+                $calls->updateIfCurrent((int) $row['id'], ['call_status'=>$status], $expected, true);
                 $this->emitEmpty();
                 return;
             }
@@ -73,25 +73,44 @@ final class TwilioStatusController
             if ($number !== null) {
                 $min = (int) ($number['min_duration_sec'] ?? 60);
             }
-
             $quality = 'unqualified_status';
             if ($status === 'completed') {
                 $quality = $duration >= $min ? 'qualified' : 'unqualified_short';
             }
-            $calls->updateIfCurrent((int) $row['id'], [
-                'call_status' => $status !== '' ? $status : (string) $row['call_status'],
+            $data = [
+                'call_status' => $status,
                 'call_duration_sec' => $duration,
                 'qualification_status' => $quality,
-            ], $expected);
+            ];
+            $id = (int) $row['id'];
+            // At most three CAS writes. Re-read after every conflict, including
+            // the last, so a persisted terminal winner is an acknowledged duplicate.
+            for ($attempt = 0; $attempt < 3; $attempt++) {
+                $expected = array_intersect_key($row, array_flip(['call_status','call_duration_sec','qualification_status']));
+                if ($calls->updateIfCurrent($id, $data, $expected, true)) {
+                    $this->emitEmpty();
+                    return;
+                }
+                $row = $calls->findByCallSid($callSid, true);
+                if ($row === null || (int) $row['id'] !== $id) {
+                    throw new \RuntimeException('callback_row_changed');
+                }
+                if (in_array((string) $row['call_status'], $terminal, true)) {
+                    $this->emitEmpty();
+                    return;
+                }
+            }
+            throw new \RuntimeException('callback_contention_unresolved');
         } catch (\Throwable $e) {
             Logger::error('status_update_failed', ['error' => $e->getMessage(), 'call_sid' => $callSid]);
+            $this->emitEmpty(503);
         }
         $this->emitEmpty();
     }
 
-    private function emitEmpty(): void
+    private function emitEmpty(int $httpStatus = 200): void
     {
-        status_header(200);
+        status_header($httpStatus);
         header('Content-Type: text/xml; charset=utf-8');
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
         echo '<?xml version="1.0" encoding="UTF-8"?><Response/>';

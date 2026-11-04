@@ -3,7 +3,9 @@
 Repairs defects demonstrated by installed synthetic callback acceptance on 0.1.3.
 All POST fields remain signed even when a query field has the same name, and
 WordPress magic quotes are removed before validating/consuming form data.
-Call progress is monotonic; the first terminal outcome is retained. Recording
+Call progress is monotonic; the first successfully persisted terminal outcome is retained.
+Terminal/progress conflicts receive at most three conditional write attempts with checked
+readback; database errors or unresolved contention return HTTP 503 for retry. Recording
 callbacks retain the first completed marker. Conditional writes preserve a
 competing callback winner. DB version stays 1.0.0; no schema change.
 
