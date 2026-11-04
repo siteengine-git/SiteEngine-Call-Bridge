@@ -39,12 +39,13 @@ final class TwilioVoiceController
                 exit;
             }
 
-            $callSid       = (string) ($_POST['CallSid'] ?? '');
-            $from          = (string) ($_POST['From'] ?? '');
-            $to            = (string) ($_POST['To'] ?? '');
-            $callerCity    = (string) ($_POST['FromCity'] ?? '');
-            $callerState   = (string) ($_POST['FromState'] ?? '');
-            $callerCountry = (string) ($_POST['FromCountry'] ?? '');
+            $post = wp_unslash($_POST);
+            $callSid       = (string) ($post['CallSid'] ?? '');
+            $from          = (string) ($post['From'] ?? '');
+            $to            = (string) ($post['To'] ?? '');
+            $callerCity    = (string) ($post['FromCity'] ?? '');
+            $callerState   = (string) ($post['FromState'] ?? '');
+            $callerCountry = (string) ($post['FromCountry'] ?? '');
 
             if ($callSid === '' || $to === '') {
                 Logger::error('voice_missing_required_params', ['call_sid' => $callSid, 'to' => $to]);

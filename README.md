@@ -1,14 +1,17 @@
-# SiteEngine Call Bridge 0.1.3 — development denial-response candidate
+# SiteEngine Call Bridge 0.1.4 — unaccepted callback repair candidate
 
-Packages the narrow permission-status repair approved for Alma development
-installation. Tracking Numbers render/save/delete capability denials explicitly
-return HTTP 403. Existing capability, nonce ordering and routing remain unchanged.
-Database version stays 1.0.0; no schema migration or provider change.
+Repairs defects demonstrated by installed synthetic callback acceptance on 0.1.3.
+All POST fields remain signed even when a query field has the same name, and
+WordPress magic quotes are removed before validating/consuming form data.
+Call progress is monotonic; the first terminal outcome is retained. Recording
+callbacks retain the first completed marker. Conditional writes preserve a
+competing callback winner. DB version stays 1.0.0; no schema change.
 
-The retained 0.1.2 allocator/DNI behavior and archives are preserved. Completed
-installed DNI and permission evidence is retained privately. Independent-browser
-acceptance, cache-HIT coverage, live telephony and authoritative consent linkage
-remain separate limits; this package does not establish them or stable release.
+This is bounded duplicate/reorder protection, not a full provider event journal,
+conflicting-final reconciliation or persistent child-leg mapping. Signed synthetic
+callbacks and inert recording markers do not establish live calls, media playback,
+consent linkage or business qualification. Installed 0.1.3 evidence is preserved;
+this repair is packaged for review and has not been installed or accepted.
 
 ## Base integration and read-only setup
 
@@ -41,7 +44,7 @@ Run tests/run.ps1 with -Php pointing to an existing PHP 8.1+ executable and -Bas
 pointing to the original Base 2.2.2 ZIP (the runner checks its SHA-256). It loads original
 Base classes into isolated WordPress/DB fixtures, not an installed website.
 Run tools/package-candidate.ps1 once to build the allow-listed installable artifact,
-then node tools/verify-denial-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
+then node tools/verify-callback-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
 The original tools/verify-baseline.cjs intentionally targets the unchanged 0.1.0 source
 snapshot; use the candidate verifier for this checkout. Tests/tools/reports are excluded
 from the installable ZIP.

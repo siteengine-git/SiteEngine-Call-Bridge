@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.4 - 2026-11-04 (unaccepted callback repair candidate; not installed)
+
+- Validate all POST form fields independently of same-named query parameters; remove WordPress magic quoting exactly once for signature calculation and authenticated callback input.
+- Preserve the first terminal call outcome and monotonic progress; progress no longer finalizes qualification. Conditional persistence prevents a competing callback from overwriting a winner.
+- Persist only complete recording markers; duplicates, absent/in-progress notifications and conflicting replacements preserve the first completed marker, using conditional persistence. No media fetching or recording enablement.
+- Preserve installed 0.1.3 synthetic callback evidence (25 pass / 5 fail) and add focused child-process regressions. Database version remains 1.0.0; no schema migration.
+- First-final/first-completed retention is bounded duplicate/reorder protection, not a full provider event journal or persistent child-leg model. Native installed acceptance of this repair remains pending.
+
+
 ## 0.1.3 - 2026-11-03 (development candidate; not stable)
 
 - Return HTTP 403 explicitly from the existing Tracking Numbers render/save/delete capability denials. Authorization, nonce ordering, repository behavior and fixed denial text are unchanged.

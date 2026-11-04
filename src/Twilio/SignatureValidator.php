@@ -108,23 +108,15 @@ final class SignatureValidator
 
     /**
      * Pull POST form params from $_POST. Twilio sends application/x-www-form-urlencoded
-     * for webhooks, so $_POST is populated by PHP. We exclude any params
-     * that came from the query string (those are part of the URL already).
+     * for webhooks. WordPress magic-quotes this superglobal: undo that layer.
+     * Query parameters stay in the URL; all form fields remain independently signed,
+     * including a body field whose name also occurs in the query string.
      */
     private static function postParams(): array
     {
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             return [];
         }
-        $params = $_POST;
-        // Strip query-string params from the body set; Twilio signs body separately
-        // from URL, and any query-string keys are already encoded in the URL.
-        if (!empty($_SERVER['QUERY_STRING'])) {
-            parse_str((string) $_SERVER['QUERY_STRING'], $query);
-            foreach (array_keys($query) as $k) {
-                unset($params[$k]);
-            }
-        }
-        return $params;
+        return wp_unslash($_POST);
     }
 }

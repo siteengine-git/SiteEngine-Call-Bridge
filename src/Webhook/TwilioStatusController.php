@@ -28,9 +28,10 @@ final class TwilioStatusController
             exit;
         }
 
-        $callSid = (string) ($_POST['CallSid'] ?? '');
-        $status = (string) ($_POST['DialCallStatus'] ?? ($_POST['CallStatus'] ?? ''));
-        $duration = (int) ($_POST['DialCallDuration'] ?? ($_POST['CallDuration'] ?? 0));
+        $post = wp_unslash($_POST);
+        $callSid = (string) ($post['CallSid'] ?? '');
+        $status = (string) ($post['DialCallStatus'] ?? ($post['CallStatus'] ?? ''));
+        $duration = max(0, (int) ($post['DialCallDuration'] ?? ($post['CallDuration'] ?? 0)));
         if ($callSid === '') {
             Logger::warn('status_missing_call_sid');
             $this->emitEmpty();
@@ -47,6 +48,26 @@ final class TwilioStatusController
                 return;
             }
 
+            // This one-row model retains its first final outcome. A late progress,
+            // duplicate or conflicting final event cannot undo accepted qualification.
+            $terminal = ['completed','busy','no-answer','failed','canceled'];
+            $known = array_merge($terminal, ['queued','initiated','ringing','in-progress']);
+            if (!in_array($status, $known, true) || in_array((string) $row['call_status'], $terminal, true)) {
+                $this->emitEmpty();
+                return;
+            }
+            $expected = array_intersect_key($row, array_flip(['call_status','call_duration_sec','qualification_status']));
+            if (!in_array($status, $terminal, true)) {
+                $rank = ['queued'=>0,'initiated'=>1,'ringing'=>2,'in-progress'=>3];
+                if (($rank[$status] ?? -1) <= ($rank[(string) $row['call_status']] ?? -1)) {
+                    $this->emitEmpty();
+                    return;
+                }
+                $calls->updateIfCurrent((int) $row['id'], ['call_status'=>$status], $expected);
+                $this->emitEmpty();
+                return;
+            }
+
             $min = 60;
             $number = (new TrackingNumberRepository())->findActiveByPhone((string) $row['tracking_number']);
             if ($number !== null) {
@@ -57,11 +78,11 @@ final class TwilioStatusController
             if ($status === 'completed') {
                 $quality = $duration >= $min ? 'qualified' : 'unqualified_short';
             }
-            $calls->update((int) $row['id'], [
+            $calls->updateIfCurrent((int) $row['id'], [
                 'call_status' => $status !== '' ? $status : (string) $row['call_status'],
                 'call_duration_sec' => $duration,
                 'qualification_status' => $quality,
-            ]);
+            ], $expected);
         } catch (\Throwable $e) {
             Logger::error('status_update_failed', ['error' => $e->getMessage(), 'call_sid' => $callSid]);
         }

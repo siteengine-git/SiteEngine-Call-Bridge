@@ -1,7 +1,7 @@
 param([string]$ZipPath)
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
-if(!$ZipPath){$ZipPath=Join-Path $root 'siteengine-call-bridge-0.1.3-denial-review-20261103.zip'}
+if(!$ZipPath){$ZipPath=Join-Path $root 'siteengine-call-bridge-0.1.4-callback-review-20261104.zip'}
 if(Test-Path -LiteralPath $ZipPath){throw 'Preserve existing archive; choose a new output path'}
 $baseline=Join-Path $root 'siteengine-call-bridge-0.1.0.zip'
 if((Get-FileHash -LiteralPath $baseline).Hash.ToLower() -ne '5a1b28ac80dfcd2b6e09cd34bdc9b2d126774b588a501d852fe01f4bdd563fb8'){throw 'Retained baseline hash mismatch'}
