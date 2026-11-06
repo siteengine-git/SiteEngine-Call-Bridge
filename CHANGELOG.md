@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.5 - 2026-11-06 (unaccepted call-evidence candidate; not installed)
+
+- Add trusted same-site PHP CallEvidence::read() for a canonical persisted call. One allow-listed SELECT reads the call snapshot, never current sessions, leases or tracking-number settings. No HTTP route, credential/media access or outbound delivery.
+- Preserve acquisition/session/number-assignment fields, outcome, duration and technical qualification. Unsnapshotted fields and AB-owned business/advertising decisions remain explicitly unavailable; no inquiry/consent linkage is fabricated.
+- Document AB ownership of all Google eligibility, conversion identity, deduplication and delivery for form- and call-origin outcomes. CB supplies evidence and implements no Google exporter.
+- Add a single labelled persisted local SQLite fixture across independent PHP processes and focused duplicate/late status checks. WordPress adapters and SQLite do not establish MariaDB, installed-site or AB end-to-end acceptance. DB stays 1.0.0; no schema/callback/credential changes.
+
+
 ## 0.1.4 - 2026-11-04 (unaccepted callback repair candidate; not installed)
 
 - Validate all POST form fields independently of same-named query parameters; remove WordPress magic quoting exactly once for signature calculation and authenticated callback input.

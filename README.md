@@ -1,4 +1,25 @@
-# SiteEngine Call Bridge 0.1.4 — unaccepted callback repair candidate
+# SiteEngine Call Bridge 0.1.5 — unaccepted call-evidence candidate
+
+The accepted development runtime remains 0.1.4 at
+ccc7d96f6c9cbc8703fac34032aa2915c2ce3a1f (Milestone 4 accepted).
+This successor adds a read-only, trusted same-site PHP interface:
+\SiteEngine\CallBridge\Integration\CallEvidence::read($canonicalIdentity).
+It supplies the persisted call snapshot without re-reading current leases or
+reconstructing attribution. Missing evidence is explicit. It creates no inquiry,
+consent linkage, advertising decision or public REST endpoint.
+
+**AB owns all Google eligibility, conversion identity, deduplication and delivery
+for form- and call-origin outcomes. CB supplies supported call evidence and does
+not implement a Google exporter.** Technical duration qualification is not
+business qualification, a won job, consent or advertising eligibility. Call identity
+remains twilio:{CallSid}; AB inquiry identity is separate and unavailable here.
+
+The callable contract, privacy boundaries, reproducible local demonstration and
+integration-owner handoff are documented in docs/CALL-EVIDENCE-CONTRACT.md.
+AB's exact callable adapter and installation identity remain pending. No AB API
+is assumed or implemented. Call-origin Google delivery remains pending.
+
+## Preserved callback behavior (accepted 0.1.4 development evidence)
 
 Repairs defects demonstrated by installed synthetic callback acceptance on 0.1.3.
 All POST fields remain signed even when a query field has the same name, and
@@ -13,7 +34,9 @@ This is bounded duplicate/reorder protection, not a full provider event journal,
 conflicting-final reconciliation or persistent child-leg mapping. Signed synthetic
 callbacks and inert recording markers do not establish live calls, media playback,
 consent linkage or business qualification. Installed 0.1.3 evidence is preserved;
-this repair is packaged for review and has not been installed or accepted.
+the corrected 0.1.4 repair passed narrow installed verification and was accepted
+for development. Historical receipts remain preserved; this 0.1.5 successor has
+not been installed or accepted.
 
 ## Base integration and read-only setup
 
@@ -46,7 +69,7 @@ Run tests/run.ps1 with -Php pointing to an existing PHP 8.1+ executable and -Bas
 pointing to the original Base 2.2.2 ZIP (the runner checks its SHA-256). It loads original
 Base classes into isolated WordPress/DB fixtures, not an installed website.
 Run tools/package-candidate.ps1 once to build the allow-listed installable artifact,
-then node tools/verify-callback-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
+then node tools/verify-evidence-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
 The original tools/verify-baseline.cjs intentionally targets the unchanged 0.1.0 source
 snapshot; use the candidate verifier for this checkout. Tests/tools/reports are excluded
 from the installable ZIP.

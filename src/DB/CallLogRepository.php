@@ -24,6 +24,15 @@ final class CallLogRepository
         return $r?:null;
     }
     public function findById(int $id): ?array { global $wpdb; $r=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table()} WHERE id=%d LIMIT 1",$id),ARRAY_A); return $r?:null; }
+    /** Persisted call snapshot only; deliberately excludes caller PII, notes and media. */
+    public function findEvidenceByCallSid(string $sid): ?array
+    {
+        global $wpdb;
+        $columns = 'id,twilio_call_sid,transaction_id,created_at,updated_at,matched_session_id,consent_receipt_id,tracking_number_id,tracking_number,forwarded_to,source,gclid,gbraid,wbraid,fbclid,msclkid,utm_source,utm_medium,utm_campaign,utm_term,utm_content,landing_page,call_status,call_duration_sec,qualification_status,is_repeat_caller,prior_qualifying_calls';
+        $row = $wpdb->get_row($wpdb->prepare("SELECT {$columns} FROM {$this->table()} WHERE twilio_call_sid=%s LIMIT 1", $sid), ARRAY_A);
+        if ($wpdb->last_error !== '') { throw new \RuntimeException('call_evidence_read_failed'); }
+        return $row ?: null;
+    }
     public function countQualifyingPriorCalls(string $caller,int $windowDays,int $minDurationSec,?string $excludeSid=null): int
     {
         global $wpdb; $sql="SELECT COUNT(*) FROM {$this->table()} WHERE caller_number=%s AND call_status='completed' AND call_duration_sec>=%d AND created_at >= (UTC_TIMESTAMP() - INTERVAL %d DAY)"; $args=[$caller,$minDurationSec,$windowDays];
