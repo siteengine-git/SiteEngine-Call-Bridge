@@ -16,6 +16,24 @@ Effective November 2, 2026. This section explicitly supersedes conflicting older
 <!-- SITEENGINE-ROLES-AUTHORITY-END -->
 # Call Bridge working rules
 
+## Authorized Alma development installation scope — November 11, 2026
+
+Aubrey's explicit current instruction supersedes older approval/drain handoff
+gates for an authorized plugin installation. Alma is a development server.
+Authorized installations include targeted backups, brief affected-site downtime,
+temporary maintenance controls, necessary site-specific PHP worker/cache handling,
+migration, verification and restoration as one coordinated execution job without
+additional approval. Reconcile actual state first and reuse completed evidence;
+do not reinstall or repeat tests when another recorded executor has completed them.
+
+Pause only for a concrete risk to unrelated sites/services, destructive data
+changes, missing root privileges, or external effects such as real calls, messages,
+payments or advertising submissions. When root is required, prepare the exact
+command immediately and continue independent work. Do not return another planning
+or authorization handoff. Preserve existing executor ownership, unrelated resources,
+credentials and historical evidence. Stable publication and delivery replacement
+remain governed by their separate explicit release instructions.
+
 Read D:\SiteEngine\AGENTS.md and D:\SiteEngine\Agency\AI-Workspace\START-HERE.md, then local STATUS.md before work. STATUS.md is deliberately local-only because it includes environment inventory; preserve it and the original handoffs/ZIP.
 
 Canonical source is this existing project root, D:\SiteEngine\Plugins\.PLUGIN — SiteEngine Call Bridge. Do not create another editable source home. One active writer. Alma is the development target; server access alone does not authorize writes. Use the task-specific alma-agent route and site owner/runtime recorded in STATUS.md. Preserve remote history and the original installable ZIP.
