@@ -81,6 +81,9 @@ final class TwilioStatusController
                 'call_status' => $status,
                 'call_duration_sec' => $duration,
                 'qualification_status' => $quality,
+                // The threshold actually used by this terminal decision, not
+                // a later reconstruction or a value observed only at Voice.
+                'qualification_threshold_sec' => $min,
             ];
             $id = (int) $row['id'];
             // At most three CAS writes. Re-read after every conflict, including

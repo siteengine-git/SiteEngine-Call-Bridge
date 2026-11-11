@@ -3,7 +3,7 @@
  * Plugin Name:       SiteEngine Call Bridge
  * Plugin URI:        https://siteengine.io
  * Description:       SiteEngine call tracking companion plugin: DNI, Twilio routing, call recording, attribution, and call diagnostics.
- * Version:           0.1.6
+ * Version:           0.1.7
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            SiteEngine
@@ -16,12 +16,12 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
-define('SECB_VERSION', '0.1.6');
+define('SECB_VERSION', '0.1.7');
 define('SECB_FILE', __FILE__);
 define('SECB_PATH', plugin_dir_path(__FILE__));
 define('SECB_URL', plugin_dir_url(__FILE__));
 define('SECB_REST_NAMESPACE', 'siteengine-call/v1');
-define('SECB_DB_VERSION', '1.0.0');
+define('SECB_DB_VERSION', '1.1.0');
 
 // Optional client config outside the replaceable plugin directory. The file
 // may define SECB_* constants; no credentials are packaged with the plugin.

@@ -1,6 +1,14 @@
-# SiteEngine Call Bridge 0.1.6 — unaccepted call-evidence and timestamp-label candidate
+# SiteEngine Call Bridge 0.1.7 — unaccepted forward-only capture candidate
 
-The accepted development runtime remains 0.1.4 at
+Prospective calls now persist versioned original reservation facts and an explicit
+server UTC capture observation on first insertion. New allocations persist their
+selected pool; first terminal decisions persist their actual applied threshold.
+Historical nulls remain unavailable. DB 1.1.0 adds three nullable columns across
+calls/leases; install and verify only in the assigned isolated target. The native
+CB-owned fixture harness/runbook is tools/acceptance/CALL-CAPTURE-RUNBOOK.md.
+Consent references are not authoritative consent, and this is not a Google exporter.
+
+The main-Alma accepted development runtime remains 0.1.4 at
 ccc7d96f6c9cbc8703fac34032aa2915c2ce3a1f (Milestone 4 accepted).
 This successor preserves the 0.1.5 call-evidence work and corrects the Call Log
 header to Time (stored), explaining that no timezone conversion is applied.
@@ -31,7 +39,7 @@ Call progress is monotonic; the first successfully persisted terminal outcome is
 Terminal/progress conflicts receive at most three conditional write attempts with checked
 readback; database errors or unresolved contention return HTTP 503 for retry. Recording
 callbacks retain the first completed marker. Conditional writes preserve a
-competing callback winner. DB version stays 1.0.0; no schema change.
+competing callback winner. The earlier 0.1.4 callback repair kept DB 1.0.0; this prospective candidate requires DB 1.1.0.
 
 This is bounded duplicate/reorder protection, not a full provider event journal,
 conflicting-final reconciliation or persistent child-leg mapping. Signed synthetic
@@ -72,7 +80,7 @@ Run tests/run.ps1 with -Php pointing to an existing PHP 8.1+ executable and -Bas
 pointing to the original Base 2.2.2 ZIP (the runner checks its SHA-256). It loads original
 Base classes into isolated WordPress/DB fixtures, not an installed website.
 Run tools/package-candidate.ps1 once to build the allow-listed installable artifact,
-then node tools/verify-timestamp-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
+then node tools/verify-capture-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
 The original tools/verify-baseline.cjs intentionally targets the unchanged 0.1.0 source
 snapshot; use the candidate verifier for this checkout. Tests/tools/reports are excluded
 from the installable ZIP.

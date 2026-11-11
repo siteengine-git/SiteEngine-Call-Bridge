@@ -1,0 +1,23 @@
+PASS empty prospective fixture; no backfilled call
+PASS actual Voice insert captured one prospective call
+PASS explicit first-insert UTC capture
+PASS original lease and allocation-time pool captured
+PASS observed reservation bounds have explicit UTC semantics
+PASS original acquisition/session copied
+PASS missing Consent stays unavailable
+PASS changed current lease/session/number cannot rewrite original snapshot
+PASS duplicate Voice cannot recapture changed context
+PASS actual terminal threshold atomically captured with its outcome
+PASS terminal write leaves original evidence immutable
+PASS later threshold change cannot rewrite applied threshold
+PASS callback-completed preserves terminal capture across fresh process
+PASS callback-ringing preserves terminal capture across fresh process
+PASS callback-busy preserves terminal capture across fresh process
+PASS read preserves terminal capture across fresh process
+PASS cross-call capture identity rejected
+PASS malformed capture fails closed
+PASS historical terminal fields remain unavailable
+PASS legacy duplicate does not backfill threshold or capture
+PASS old lease pool never inferred from current number
+PASS UTC observation never relabels naive historical timestamp
+22 PASS / 0 FAIL; real local SQLite persistence, WordPress adapter; no MariaDB/installed HTTP claim

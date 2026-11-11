@@ -24,6 +24,6 @@ $GLOBALS['callback_input']=$input;
 $wpdb=new CallbackDb($input['rows']??[]);
 $GLOBALS['callback_race']=$input['race']??null;
 register_shutdown_function(static function()use($argv){file_put_contents($argv[2],json_encode(['status'=>$GLOBALS['status'],'rows'=>$GLOBALS['wpdb']->rows,'writes'=>$GLOBALS['wpdb']->writes,'reads'=>$GLOBALS['wpdb']->reads,'attempts'=>$GLOBALS['wpdb']->attempts],JSON_THROW_ON_ERROR));});
-foreach(['Support/Config.php','Support/Logger.php','Support/WebhookEvents.php','Support/Phone.php','Twilio/SignatureValidator.php','Twilio/TwiMLBuilder.php','DB/CallLogRepository.php','DB/TrackingNumberRepository.php','DB/AttributionSessionRepository.php','DB/NumberLeaseRepository.php'] as $p)require dirname(__DIR__).'/src/'.$p;
+foreach(['Support/CallCapture.php','Support/Config.php','Support/Logger.php','Support/WebhookEvents.php','Support/Phone.php','Twilio/SignatureValidator.php','Twilio/TwiMLBuilder.php','DB/CallLogRepository.php','DB/TrackingNumberRepository.php','DB/AttributionSessionRepository.php','DB/NumberLeaseRepository.php'] as $p)require dirname(__DIR__).'/src/'.$p;
 if($input['mode']==='signature'){echo json_encode(SiteEngine\CallBridge\Twilio\SignatureValidator::validateCurrentRequest());exit;}
 $map=['status'=>'TwilioStatusController','recording'=>'TwilioRecordingController','voice'=>'TwilioVoiceController'];$name=$map[$input['mode']];require dirname(__DIR__).'/src/Webhook/'.$name.'.php';$class='SiteEngine\CallBridge\Webhook\\'.$name;(new $class())->handle(new WP_REST_Request());

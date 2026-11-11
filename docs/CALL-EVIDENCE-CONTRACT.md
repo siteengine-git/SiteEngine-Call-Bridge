@@ -2,7 +2,7 @@
 
 This is a CB-owned, read-only same-site PHP boundary for trusted integrations.
 It is not an AB API, a REST endpoint, an exporter or a new credential facility.
-The current successor candidate is 0.1.6 / DB 1.0.0; the 0.1.5 evidence API is unchanged. Accepted installed development evidence remains
+The forward-only candidate is 0.1.7 / DB 1.1.0; existing evidence-v1 fields remain compatible. Accepted installed development evidence remains
 0.1.4 at `ccc7d96f6c9cbc8703fac34032aa2915c2ce3a1f`; this interface has not been
 installed or verified with AB.
 
@@ -45,6 +45,7 @@ Every response has `contract`, `status`, `call` and `unavailable`. Status is one
 | `invalid_identity` | Unsupported identity syntax; no SQL is executed. |
 | `not_found` | The SELECT succeeded but no row exists. |
 | `storage_error` | Reading failed; no call, SQL or exception details are exposed. |
+| `capture_invalid` | Stored prospective capture is malformed or conflicts with call identity/assignment; no call is returned. |
 | `identity_conflict` | Persisted identity disagrees; no call is returned. |
 
 For non-`found` results `call` is null and `unavailable` is empty. This is a retrieval
@@ -70,7 +71,7 @@ by the evidence SELECT or returned. The caller-facing `tracking_number` and
 sync. Assignment and acquisition always come from this call row; the query does
 not join sessions, leases or current number settings.
 
-The following fields are explicitly null with reasons:
+For historical rows lacking forward capture, the following fields remain explicitly null with reasons:
 
 - `number_assignment.lease_id`, `pool_group`, `leased_at`, `expires_at`:
   `not_snapshotted_on_call`.
@@ -165,3 +166,40 @@ cleanup/retention rather than orphaning it. Report installed verification and
 retained IDs/cleanup owner separately. No integration-site fixtures or controls
 exist from this local assignment, and this handoff document is not proof of
 delivery to another chat.
+
+## Forward-only capture extension (0.1.7 / DB 1.1.0)
+
+Three nullable additive columns: calls.call_capture_json LONGTEXT,
+calls.qualification_threshold_sec INT UNSIGNED, number_leases.pool_group VARCHAR(50).
+Normal isolated bootstrap runs existing Installer::maybeUpgrade/dbDelta and saves
+DB version1.1.0; no activation or forced cron required. Existing rows gain NULL
+columns only. Do not backfill. Compare old-column projections through migration.
+
+New lease INSERT records the selected pool at allocation time (empty string means
+an unnamed standalone pool; NULL means not captured). Renewals never relabel old
+leases. The first successful Voice call INSERT stores capture JSON version1,
+bound to its canonical identity, original observed number/lease/session, lease
+bounds and allocation-time pool. A previously allocated legacy lease with NULL
+pool remains unknown even if the number currently has a named pool.
+
+The read envelope adds call.capture={version,captured_at_utc,lease_timestamp_timezone}.
+Capture time is CB's server UTC receipt observation, NOT provider call start,
+consent grant or business outcome time. Legacy call.timestamp_timezone stays null:
+a UTC observation does not relabel a naive created_at field. Original lease bounds
+observed at call capture use UTC; later renewal/current lease changes cannot
+rewrite the copied bounds. Assignment fields are filled ONLY from validated
+stored capture, never a live join. Malformed, unsupported-version, canonical or
+assignment-conflicting capture yields capture_invalid. No raw JSON is returned.
+
+The first successful terminal CAS stores the threshold actually used by that
+status callback with its outcome. It is not inferred from today's number or
+merely the threshold seen at Voice. A historical terminal row remains unknown;
+a new terminal event on an old still-pending row may capture its actual new decision.
+Duplicates/late events cannot replace the winner or enrich an old terminal row.
+
+Authoritative Consent remains an external boundary. TrackSessionController does
+not currently supply an authoritative Consent binding; any already-persisted
+consent_receipt_id is only a reference copied unchanged. No Consent API, grant,
+inquiry or advertising permission is fabricated. AB owns all final decisions.
+Native fixture operations/ceilings and reference-safe retention/cleanup are in
+tools/acceptance/CALL-CAPTURE-RUNBOOK.md. Main Alma stays unchanged.

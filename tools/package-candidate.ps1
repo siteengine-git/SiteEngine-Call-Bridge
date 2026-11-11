@@ -1,7 +1,7 @@
 param([string]$ZipPath)
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
-if(!$ZipPath){$ZipPath=Join-Path $root 'siteengine-call-bridge-0.1.6-timestamp-evidence-review-20261111.zip'}
+if(!$ZipPath){$ZipPath=Join-Path $root 'siteengine-call-bridge-0.1.7-forward-capture-review-20261111.zip'}
 if(Test-Path -LiteralPath $ZipPath){throw 'Preserve existing archive; choose a new output path'}
 $baseline=Join-Path $root 'siteengine-call-bridge-0.1.0.zip'
 if((Get-FileHash -LiteralPath $baseline).Hash.ToLower() -ne '5a1b28ac80dfcd2b6e09cd34bdc9b2d126774b588a501d852fe01f4bdd563fb8'){throw 'Retained baseline hash mismatch'}
@@ -9,7 +9,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $old=[IO.Compression.ZipFile]::OpenRead($baseline)
 try{$reader=[IO.StreamReader]::new($old.GetEntry('siteengine-call-bridge/RELEASE-MANIFEST.sha256').Open());try{$lines=$reader.ReadToEnd() -split "\r?\n"}finally{$reader.Dispose()}}finally{$old.Dispose()}
 $paths=@($lines|Where-Object {$_ -match '^([a-f0-9]{64})\s+\./(.+)$'}|ForEach-Object {$_ -replace '^[a-f0-9]{64}\s+\./',''})
-$paths+=@('src/Integration/BaseIntegration.php','src/Integration/CallEvidence.php','src/Support/Readiness.php','src/Support/SharedBusinessContext.php','templates/admin/setup-status.php','readme-tabs/call-bridge.php')
+$paths+=@('src/Integration/BaseIntegration.php','src/Integration/CallEvidence.php','src/Support/CallCapture.php','src/Support/Readiness.php','src/Support/SharedBusinessContext.php','templates/admin/setup-status.php','readme-tabs/call-bridge.php')
 $paths=@($paths|Sort-Object -Unique)
 $manifest=@()
 foreach($path in $paths){

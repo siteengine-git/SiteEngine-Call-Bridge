@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.7 - 2026-11-11 (unaccepted forward-only capture candidate)
+
+- New allocations persist their selected pool; new call inserts capture a versioned canonical-identity-bound original lease/number observation and UTC receipt time. Never reconstruct historical capture from current settings.
+- First terminal conditional persistence stores the exact threshold used for that decision. Duplicates, late callbacks and existing terminal rows cannot overwrite/backfill it.
+- Extend evidence v1 additively with capture metadata and available original assignment/threshold fields; malformed/conflicting capture returns capture_invalid. Legacy naive timestamp timezone and authoritative Consent remain unavailable.
+- DB 1.1.0 adds nullable calls.call_capture_json, calls.qualification_threshold_sec and number_leases.pool_group. No historical UPDATE/backfill; no allocation policy, forwarding, signature or media behavior change.
+- Add focused local persisted controller/replay tests and a target/manifest-gated CB-owned native fixture for AB's isolated executor. No main-Alma migration or Google exporter.
+
 ## 0.1.6 - 2026-11-11 (unaccepted successor; not installed)
 
 - Correct Call Log Time (UTC) to Time (stored), with an explicit no-conversion explanation. Raw timestamps, ordering and historical rows are unchanged; database/site timezone settings are not modified.

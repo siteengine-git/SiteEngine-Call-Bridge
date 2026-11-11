@@ -74,6 +74,7 @@ final class TwilioVoiceController
             // current active lease. No "most recent visitor who saw number X"
             // heuristic is used.
             $session = null;
+            $lease = null;
             try {
                 $lease = (new NumberLeaseRepository())->findActiveByTrackingNumber($trackingE164);
                 if ($lease !== null) {
@@ -107,6 +108,7 @@ final class TwilioVoiceController
                     $callRepo->insert([
                         'twilio_call_sid'        => $callSid,
                         'transaction_id'         => 'twilio:' . $callSid,
+                        'call_capture_json'      => \SiteEngine\CallBridge\Support\CallCapture::encode($trackingRow, $lease, $session, 'twilio:' . $callSid),
                         'tracking_number'        => $trackingE164,
                         'tracking_number_id'     => (int) $trackingRow['id'],
                         'caller_number'          => $callerE164 ?? $from,

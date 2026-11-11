@@ -28,7 +28,7 @@ final class CallLogRepository
     public function findEvidenceByCallSid(string $sid): ?array
     {
         global $wpdb;
-        $columns = 'id,twilio_call_sid,transaction_id,created_at,updated_at,matched_session_id,consent_receipt_id,tracking_number_id,tracking_number,forwarded_to,source,gclid,gbraid,wbraid,fbclid,msclkid,utm_source,utm_medium,utm_campaign,utm_term,utm_content,landing_page,call_status,call_duration_sec,qualification_status,is_repeat_caller,prior_qualifying_calls';
+        $columns = 'id,twilio_call_sid,transaction_id,created_at,updated_at,matched_session_id,consent_receipt_id,tracking_number_id,tracking_number,forwarded_to,source,gclid,gbraid,wbraid,fbclid,msclkid,utm_source,utm_medium,utm_campaign,utm_term,utm_content,landing_page,call_status,call_duration_sec,qualification_status,is_repeat_caller,prior_qualifying_calls,call_capture_json,qualification_threshold_sec';
         $row = $wpdb->get_row($wpdb->prepare("SELECT {$columns} FROM {$this->table()} WHERE twilio_call_sid=%s LIMIT 1", $sid), ARRAY_A);
         if ($wpdb->last_error !== '') { throw new \RuntimeException('call_evidence_read_failed'); }
         return $row ?: null;
@@ -41,5 +41,5 @@ final class CallLogRepository
     }
     public function listRecent(int $limit=50,int $offset=0): array { global $wpdb; return $wpdb->get_results($wpdb->prepare("SELECT * FROM {$this->table()} ORDER BY created_at DESC LIMIT %d OFFSET %d",$limit,$offset),ARRAY_A)?:[]; }
     public function countAll(): int { global $wpdb; return (int)$wpdb->get_var("SELECT COUNT(*) FROM {$this->table()}"); }
-    private function formats(array $data): array { $ints=['id','tracking_number_id','call_duration_sec','recording_duration_sec','is_repeat_caller','prior_qualifying_calls']; $out=[]; foreach(array_keys($data) as $k){$out[]=in_array($k,$ints,true)?'%d':'%s';} return $out; }
+    private function formats(array $data): array { $ints=['id','tracking_number_id','qualification_threshold_sec','call_duration_sec','recording_duration_sec','is_repeat_caller','prior_qualifying_calls']; $out=[]; foreach(array_keys($data) as $k){$out[]=in_array($k,$ints,true)?'%d':'%s';} return $out; }
 }
