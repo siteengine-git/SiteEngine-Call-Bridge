@@ -190,6 +190,10 @@ check(acquire($b,'fixture-other-visitor')===null&&$s->leases[$r['id']]===$r,'fai
 check(acquire($a,'fixture-unknown-session')===null&&$s->leases===[],'unknown non-row session lookup fails closed without error text');
 [$s,$a,$b]=setup();$lock=(new Leases())->allocationLockName();$a->prefix='other_site_';
 check($lock!==(new Leases())->allocationLockName()&&strlen($lock)===51,'allocation lock scopes database/site prefix and fits native lock name limit');
+[$s,$a,$b]=setup();number($s,1,'fixture_alpha',null);$r=acquire($a,'fixture-unnamed-pool');
+check($r&&array_key_exists('pool_group',$r)&&$r['pool_group']==='','new unnamed pool recorded distinctly from legacy NULL');
+[$s,$a,$b]=setup();number($s,1);$r=acquire($a,'fixture-original-pool');$s->numbers[1]['pool_group']='later_pool';$GLOBALS['lease_clock']+=60;$again=acquire($a,'fixture-original-pool');
+check($again&&$again['pool_group']==='fixture_pool','renewal preserves original allocation pool after current pool change');
 $failed=count(array_filter($results,fn($r)=>!$r['ok']));echo 'RESULT '.(count($results)-$failed).' PASS / '.$failed." FAIL; fake wpdb only, no SQL exclusivity acceptance.\n";
 if(isset($argv[1]))file_put_contents($argv[1],json_encode($results,JSON_PRETTY_PRINT)."\n");exit($failed?1:0);
 }

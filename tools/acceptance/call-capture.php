@@ -48,10 +48,14 @@ $eventSnapshot=static function()use($wpdb):array {
 };
 if($mode==='prepare'){
     if(file_exists($ledgerFile)||Config::twilioAuthToken()!==null||Config::twilioAccountSid()!==null)throw new RuntimeException('existing_run_or_real_credentials');
-    if($wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.$wpdb->prefix.'se_cb_tracking_numbers WHERE phone_number=%s',$phone))!=0
-        || (new CallLogRepository())->findByCallSid($sid,true)!==null
-        || (new AttributionSessionRepository())->findBySessionId($sessionId)!==null
-        || $wpdb->get_var('SELECT COUNT(*) FROM '.$wpdb->prefix."se_cb_number_leases WHERE status='active' AND expires_at<=UTC_TIMESTAMP()")!=0)throw new RuntimeException('fixture_or_gc_collision');
+    $numberCount=$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM '.$wpdb->prefix.'se_cb_tracking_numbers WHERE phone_number=%s',$phone));
+    if($wpdb->last_error!==''||$numberCount===null)throw new RuntimeException('collision_read_failed');
+    $existingCall=(new CallLogRepository())->findByCallSid($sid,true);
+    $existingSession=(new AttributionSessionRepository())->findBySessionId($sessionId);
+    if($wpdb->last_error!=='')throw new RuntimeException('session_collision_read_failed');
+    $expiredCount=$wpdb->get_var('SELECT COUNT(*) FROM '.$wpdb->prefix."se_cb_number_leases WHERE status='active' AND expires_at<=UTC_TIMESTAMP()");
+    if($wpdb->last_error!==''||$expiredCount===null)throw new RuntimeException('expiry_collision_read_failed');
+    if($numberCount!=0||$existingCall!==null||$existingSession!==null||$expiredCount!=0)throw new RuntimeException('fixture_or_gc_collision');
     $before=$snapshot();$events=$eventSnapshot();$wpdb->query('START TRANSACTION');
     try{
         $numberId=(new TrackingNumberRepository())->insert(['phone_number'=>$phone,'forward_to'=>$forward,'display_label'=>$marker,'source'=>$marker,'pool_group'=>$marker,'record_calls'=>0,'min_duration_sec'=>60,'repeat_window_days'=>30,'is_active'=>1,'notes'=>'SYNTHETIC '.$marker]);

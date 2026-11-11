@@ -24,7 +24,7 @@ function readZip(path){
 }
 
 
-const path=process.argv[2]||'siteengine-call-bridge-0.1.7-forward-capture-review-20261111.zip';
+const path=process.argv[2]||'siteengine-call-bridge-0.1.7-forward-capture-review-r2-20261111.zip';
 const prior=readZip('siteengine-call-bridge-0.1.6-timestamp-evidence-review-20261111.zip');assert(sha(prior.bytes)==='16a57e8d61e3abb90d6d95998dee993ba80742abaf7e0a56a58364f88de2c6d4','Preserve installed archive');
 const candidate=readZip(path),files=candidate.files;assert(files.size===53&&files.size===prior.files.size+1,'File count');
 const allowed=new Set(['siteengine-call-bridge.php','README.md','CHANGELOG.md','RELEASE-MANIFEST.sha256','src/Installer.php','src/DB/CallLogRepository.php','src/DB/NumberLeaseRepository.php','src/Webhook/TwilioVoiceController.php','src/Webhook/TwilioStatusController.php','src/Integration/CallEvidence.php','src/Support/CallCapture.php']);let protectedCount=0;

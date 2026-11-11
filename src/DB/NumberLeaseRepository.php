@@ -91,7 +91,7 @@ final class NumberLeaseRepository
             $row=$available[$idx];
             $now=gmdate('Y-m-d H:i:s');
             $expires=gmdate('Y-m-d H:i:s',time()+Config::leaseMinutes()*60);
-            $data=['session_id'=>$sessionId,'tracking_number_id'=>(int)$row['id'],'tracking_number'=>(string)$row['phone_number'],'source'=>$source,'pool_group'=>isset($row['pool_group'])?trim((string)$row['pool_group']):null,'leased_at'=>$now,'expires_at'=>$expires,'status'=>'active'];
+            $data=['session_id'=>$sessionId,'tracking_number_id'=>(int)$row['id'],'tracking_number'=>(string)$row['phone_number'],'source'=>$source,'pool_group'=>trim((string)($row['pool_group']??'')),'leased_at'=>$now,'expires_at'=>$expires,'status'=>'active'];
             $ok=$wpdb->insert($this->table(),$data,['%s','%d','%s','%s','%s','%s','%s','%s']);
             if($ok!==1 || $wpdb->last_error!=='' || (int)$wpdb->insert_id<=0) return null;
             $insertId=(int)$wpdb->insert_id;
