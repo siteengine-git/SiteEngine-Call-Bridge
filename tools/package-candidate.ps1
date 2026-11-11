@@ -1,7 +1,7 @@
 param([string]$ZipPath)
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
-if(!$ZipPath){$ZipPath=Join-Path $root 'siteengine-call-bridge-0.1.5-call-evidence-review-20261106.zip'}
+if(!$ZipPath){$ZipPath=Join-Path $root 'siteengine-call-bridge-0.1.6-timestamp-evidence-review-20261111.zip'}
 if(Test-Path -LiteralPath $ZipPath){throw 'Preserve existing archive; choose a new output path'}
 $baseline=Join-Path $root 'siteengine-call-bridge-0.1.0.zip'
 if((Get-FileHash -LiteralPath $baseline).Hash.ToLower() -ne '5a1b28ac80dfcd2b6e09cd34bdc9b2d126774b588a501d852fe01f4bdd563fb8'){throw 'Retained baseline hash mismatch'}
@@ -23,7 +23,7 @@ $archive=[IO.Compression.ZipFile]::Open($ZipPath,[IO.Compression.ZipArchiveMode]
 try{
  foreach($path in @($paths)+@('RELEASE-MANIFEST.sha256')){
   $entry=$archive.CreateEntry('siteengine-call-bridge/'+$path,[IO.Compression.CompressionLevel]::Optimal)
-  $entry.LastWriteTime=[DateTimeOffset]::new(2026,11,6,0,0,0,[TimeSpan]::Zero)
+  $entry.LastWriteTime=[DateTimeOffset]::new(2026,11,11,0,0,0,[TimeSpan]::Zero)
   $input=[IO.File]::OpenRead((Join-Path $root $path));$output=$entry.Open()
   try{$input.CopyTo($output)}finally{$input.Dispose();$output.Dispose()}
  }

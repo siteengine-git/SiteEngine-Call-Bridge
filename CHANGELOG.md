@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.6 - 2026-11-11 (unaccepted successor; not installed)
+
+- Correct Call Log Time (UTC) to Time (stored), with an explicit no-conversion explanation. Raw timestamps, ordering and historical rows are unchanged; database/site timezone settings are not modified.
+- Preserve the complete 0.1.5 supported call-evidence interface and its documentation. DB stays 1.0.0. No callback, lease/DNI, credential, provider or AB runtime changes.
+
 ## 0.1.5 - 2026-11-06 (unaccepted call-evidence candidate; not installed)
 
 - Add trusted same-site PHP CallEvidence::read() for a canonical persisted call. One allow-listed SELECT reads the call snapshot, never current sessions, leases or tracking-number settings. No HTTP route, credential/media access or outbound delivery.

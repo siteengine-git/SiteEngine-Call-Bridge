@@ -9,8 +9,8 @@ final class CallLogPage
     {
         if(!current_user_can(Menu::CAP))wp_die('Insufficient permissions.');$repo=new CallLogRepository();$rows=$repo->listRecent(50,0);$total=$repo->countAll();
         ?>
-        <div class="wrap"><h1>SiteEngine Call Bridge — Call Log</h1><p>Showing most recent 50 of <strong><?php echo (int)$total; ?></strong> calls.</p>
-        <table class="wp-list-table widefat fixed striped"><thead><tr><th>Time (UTC)</th><th>Caller</th><th>Tracking #</th><th>Status</th><th>Duration</th><th>Quality</th><th>Repeat</th><th>Click ID</th><th>Source</th><th>Campaign</th><th>Recording</th></tr></thead><tbody>
+        <div class="wrap"><h1>SiteEngine Call Bridge — Call Log</h1><p>Showing most recent 50 of <strong><?php echo (int)$total; ?></strong> calls.</p><p>Timestamps are shown as stored; no timezone conversion is applied.</p>
+        <table class="wp-list-table widefat fixed striped"><thead><tr><th>Time (stored)</th><th>Caller</th><th>Tracking #</th><th>Status</th><th>Duration</th><th>Quality</th><th>Repeat</th><th>Click ID</th><th>Source</th><th>Campaign</th><th>Recording</th></tr></thead><tbody>
         <?php if(!$rows): ?><tr><td colspan="11"><em>No calls logged yet.</em></td></tr><?php else: foreach($rows as $r):
             $click='—'; if(!empty($r['gclid']))$click='gclid'; elseif(!empty($r['gbraid']))$click='gbraid'; elseif(!empty($r['wbraid']))$click='wbraid'; elseif(!empty($r['msclkid']))$click='msclkid'; elseif(!empty($r['fbclid']))$click='fbclid';
             $play=!empty($r['recording_url'])?rest_url(SECB_REST_NAMESPACE.'/recording/'.(int)$r['id']):null; ?>

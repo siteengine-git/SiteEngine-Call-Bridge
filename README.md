@@ -1,8 +1,11 @@
-# SiteEngine Call Bridge 0.1.5 — unaccepted call-evidence candidate
+# SiteEngine Call Bridge 0.1.6 — unaccepted call-evidence and timestamp-label candidate
 
 The accepted development runtime remains 0.1.4 at
 ccc7d96f6c9cbc8703fac34032aa2915c2ce3a1f (Milestone 4 accepted).
-This successor adds a read-only, trusted same-site PHP interface:
+This successor preserves the 0.1.5 call-evidence work and corrects the Call Log
+header to Time (stored), explaining that no timezone conversion is applied.
+Historical timestamps are not rewritten or relabelled as UTC. It includes the
+read-only, trusted same-site PHP interface:
 \SiteEngine\CallBridge\Integration\CallEvidence::read($canonicalIdentity).
 It supplies the persisted call snapshot without re-reading current leases or
 reconstructing attribution. Missing evidence is explicit. It creates no inquiry,
@@ -69,7 +72,7 @@ Run tests/run.ps1 with -Php pointing to an existing PHP 8.1+ executable and -Bas
 pointing to the original Base 2.2.2 ZIP (the runner checks its SHA-256). It loads original
 Base classes into isolated WordPress/DB fixtures, not an installed website.
 Run tools/package-candidate.ps1 once to build the allow-listed installable artifact,
-then node tools/verify-evidence-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
+then node tools/verify-timestamp-candidate.cjs <new ZIP path>. Existing archives are never overwritten.
 The original tools/verify-baseline.cjs intentionally targets the unchanged 0.1.0 source
 snapshot; use the candidate verifier for this checkout. Tests/tools/reports are excluded
 from the installable ZIP.

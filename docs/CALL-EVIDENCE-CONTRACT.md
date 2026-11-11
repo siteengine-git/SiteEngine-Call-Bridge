@@ -2,7 +2,7 @@
 
 This is a CB-owned, read-only same-site PHP boundary for trusted integrations.
 It is not an AB API, a REST endpoint, an exporter or a new credential facility.
-The candidate is 0.1.5 / DB 1.0.0. Accepted installed development evidence remains
+The current successor candidate is 0.1.6 / DB 1.0.0; the 0.1.5 evidence API is unchanged. Accepted installed development evidence remains
 0.1.4 at `ccc7d96f6c9cbc8703fac34032aa2915c2ce3a1f`; this interface has not been
 installed or verified with AB.
 
