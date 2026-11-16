@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.9 - 2026-11-16 (protected recording review candidate)
+
+- Add REST nonce to administrator playback links; explicitly enforce capability and nonce.
+- Derive HTTPS media target from configured account and persisted Recording SID; disable redirects, bound response size to 20 MiB, validate WAV signature, request two channels and prevent browser/proxy caching.
+- Check recording persistence and reconcile bounded conditional conflicts; preserve first completed marker and return 503 for unknown persistence, without promising provider retries.
+- Preserve per-number notice/enablement, dual-channel Dial, callback signatures, original evidence and terminal outcomes. No schema or credential-resolver change; DB 1.1.0.
+- Live recorded two-way audio/playback is pending operator acceptance; stable delivery remains 0.1.8.
+
 ## 0.1.8 - 2026-11-16 (administration tabs review candidate)
 
 - Consolidate CB administration into one Call Bridge entry with Setup & Status,

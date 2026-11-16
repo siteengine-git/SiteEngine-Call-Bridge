@@ -62,28 +62,41 @@ final class TwilioRecordingController
 
         try {
             $callRepo = new CallLogRepository();
-            $existing = $callRepo->findByCallSid($callSid);
-            if ($existing === null) {
-                Logger::warn('recording_call_not_found', ['call_sid' => $callSid]);
-                WebhookEvents::record(WebhookEvents::RECORDING_UNMATCHED, $callSid);
+            for ($attempt = 0; $attempt < 3; $attempt++) {
+                $existing = $callRepo->findByCallSid($callSid, true);
+                if ($existing === null) {
+                    Logger::warn('recording_call_not_found', ['call_sid' => $callSid]);
+                    WebhookEvents::record(WebhookEvents::RECORDING_UNMATCHED, $callSid);
+                    $this->emitEmpty();
+                    return;
+                }
+                if (!empty($existing['recording_sid']) && !empty($existing['recording_url'])) {
+                    $this->emitEmpty();
+                    return;
+                }
+                $expected = array_intersect_key($existing, array_flip(['recording_sid','recording_url','recording_duration_sec']));
+                if ($callRepo->updateIfCurrent((int) $existing['id'], [
+                    'recording_sid'          => $recordingSid,
+                    'recording_url'          => $recordingUrl,
+                    'recording_duration_sec' => $recordingDuration,
+                ], $expected, true)) {
+                    $this->emitEmpty();
+                    return;
+                }
+            }
+            $winner = $callRepo->findByCallSid($callSid, true);
+            if (!empty($winner['recording_sid']) && !empty($winner['recording_url'])) {
                 $this->emitEmpty();
                 return;
             }
-            if (!empty($existing['recording_sid']) && !empty($existing['recording_url'])) {
-                $this->emitEmpty();
-                return;
-            }
-            $expected = array_intersect_key($existing, array_flip(['recording_sid','recording_url','recording_duration_sec']));
-            $callRepo->updateIfCurrent((int) $existing['id'], [
-                'recording_sid'          => $recordingSid,
-                'recording_url'          => $recordingUrl,
-                'recording_duration_sec' => $recordingDuration,
-            ], $expected);
         } catch (\Throwable $e) {
-            Logger::error('recording_update_failed', ['error' => $e->getMessage()]);
+            Logger::error('recording_update_failed');
         }
-
-        $this->emitEmpty();
+        // Signals uncertainty, without claiming the provider will retry.
+        status_header(503);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Recording persistence unavailable';
+        exit;
     }
 
     private function emitEmpty(): void

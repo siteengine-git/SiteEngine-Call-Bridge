@@ -1,13 +1,13 @@
-# SiteEngine Call Bridge 0.1.8 — administration tabs review candidate
+Recording successor to accepted 0.1.8: nonce-authenticated administrator playback, fixed-host bounded two-channel WAV retrieval and checked recording callback persistence. Live recorded-call acceptance remains pending. DB stays 1.1.0. Stable delivery is unchanged.
+
+# SiteEngine Call Bridge 0.1.9 — protected recording review candidate
 
 One Call Bridge menu entry opens Setup & Status, Tracking Numbers, Call Log and
 Help & Reference as native WordPress navigation tabs. The existing settings slug,
 legacy Numbers/Call Log URLs, number-edit links and save/delete actions remain
 compatible. Shared Base Help and standalone navigation remain supported.
 
-This navigation-only successor preserves the accepted 0.1.7 core runtime and
-database version 1.1.0. No provider, DNI, credential, qualification or integration
-behavior is added. Stable 0.1.7 and its delivery remain authoritative until review.
+This recording successor preserves database version 1.1.0 and accepted routing, DNI, qualification, acquisition evidence and credential resolution. Stable 0.1.8 delivery remains authoritative pending recorded-call review.
 The following prospective capture description is retained from that release.
 
 Prospective calls now persist versioned original reservation facts and an explicit
@@ -213,4 +213,4 @@ Call Bridge preserves its tables on uninstall by default. To deliberately drop t
 
 ## Deferred roadmap
 
-Call-level Google Sheets/Data Manager export belongs in Call Bridge, not Ads Bridge, but remains deferred until DNI/Twilio/recording behavior is accepted on an approved isolated test site. No call export API is implemented.
+AB owns Google eligibility, conversion identity, deduplication and delivery for form- and call-origin outcomes. CB supplies supported call evidence and does not implement a Google exporter.
