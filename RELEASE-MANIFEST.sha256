@@ -7,7 +7,7 @@ f7b635ce3be96d52082039f41b7090f09b589016d256fbd116f7a79f9fb7447c  ./README.md
 dd3a1b1828275b58a4fedde8843b65285f4a36d04231d478915bd8ae48eb8ac1  ./siteengine-call-bridge.php
 81a0640cc877221e754061db2c0b45e618200fef1c1b8d1d36b099a31ac9b78f  ./src/Admin/CallLogPage.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./src/Admin/index.php
-0a1ed7988a0e544399a5104f7cf46808289fdfb7d791247609828c84f78418b6  ./src/Admin/Menu.php
+dc5130d6dd425991cafa5edae80bc086054f937e363e32fdf70edf0fa00b4455  ./src/Admin/Menu.php
 8c5beb74632fd4319d16dbf98f464fdd38be36c5e4e4427150dad8ca535a9c23  ./src/Admin/SettingsPage.php
 e13f85729c6dba035e31b3ca80cfdec7fc490c1f012bd683171a988c97d5bf9b  ./src/Admin/TrackingNumbersPage.php
 f7ba468e1da6ada48fee3028b405c31faa2e782b04cedc7d8bd508c9a23b2b11  ./src/CLI/Commands.php

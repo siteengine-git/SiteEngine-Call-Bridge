@@ -11,6 +11,9 @@ function sanitize_text_field($s){return strip_tags($s);}
 function sanitize_textarea_field($s){return strip_tags($s);}
 function sanitize_key($s){return preg_replace('/[^a-z0-9_-]/','',strtolower($s));}
 function wp_unslash($s){return $s;}
+function is_admin(){return $GLOBALS['admin_context']??true;}
+function add_action($name,$callback,$priority=10){$GLOBALS['hooks'][$name][$priority][]=$callback;}
+function add_filter($name,$callback,$priority=10){}
 function admin_url($s){return 'https://fixture.invalid/wp-admin/'.$s;}
 function add_query_arg($args,$url){return $url.'?'.http_build_query($args);}
 function wp_safe_redirect($url){throw new ActionStop($url,302);}
@@ -49,4 +52,6 @@ foreach(['secb-numbers'=>'numbers','secb-calls'=>'calls']as$slug=>$tab){
 $GLOBALS['allowed']=false;
 try{Menu::redirectLegacy();throw new RuntimeException('missing legacy denial');}catch(ActionStop $r){check($r->status===403,'legacy redirect denies subscriber before redirect');}
 $_GET=['page'=>'foreign'];Menu::redirectLegacy();check(true,'unrelated admin page is not redirected');
+(new Menu())->register();check(isset($GLOBALS['hooks']['init'][0])&&!isset($GLOBALS['hooks']['admin_init']),'legacy redirect runs before core admin-menu authorization');
+$GLOBALS['admin_context']=false;$_GET=['page'=>'secb-numbers'];Menu::redirectLegacy();check(true,'front-end query does not redirect into administration');
 echo $GLOBALS['pass']." PASS / 0 FAIL; actual action/repository with isolated adapters\n";

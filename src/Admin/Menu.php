@@ -14,7 +14,8 @@ final class Menu
         add_action('admin_menu',[$this,'addMenu'],120);
         add_action('admin_post_secb_save_number',[TrackingNumbersPage::class,'handleSave']);
         add_action('admin_post_secb_delete_number',[TrackingNumbersPage::class,'handleDelete']);
-        add_action('admin_init', [self::class, 'redirectLegacy'], 0);
+        // Core authorizes admin menus before admin_init; redirect at init instead.
+        add_action('init', [self::class, 'redirectLegacy'], 0);
         add_filter('parent_file', [self::class, 'parentFile']);
         add_filter('submenu_file', [self::class, 'submenuFile']);
     }
@@ -50,6 +51,7 @@ final class Menu
     }
     public static function redirectLegacy(): void
     {
+        if (!is_admin()) return;
         $page = $_GET['page'] ?? null;
         if (!is_string($page) || !in_array($page, [self::SLUG_NUMBERS,self::SLUG_CALLS], true)) return;
         if (!current_user_can(self::CAP)) wp_die('Insufficient permissions.', '', ['response'=>403]);

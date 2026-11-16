@@ -25,7 +25,7 @@ function readZip(path){
 
 
 
-const path=process.argv[2]||'siteengine-call-bridge-0.1.8-admin-tabs-review-r3-20261116.zip';
+const path=process.argv[2]||'siteengine-call-bridge-0.1.8-admin-tabs-review-r4-20261116.zip';
 const prior=readZip('siteengine-call-bridge-0.1.7.zip');assert(sha(prior.bytes)==='537700ab86592e6ceeabe0693be9f7e700e75f5fac6274a9628de0885d4e79ef','Preserve stable archive');
 const candidate=readZip(path),files=candidate.files;assert(files.size===53&&files.size===prior.files.size,'File count');
 const allowed=new Set(['siteengine-call-bridge.php','README.md','CHANGELOG.md','RELEASE-MANIFEST.sha256','src/Admin/Menu.php','src/Admin/SettingsPage.php','src/Admin/TrackingNumbersPage.php','src/Admin/CallLogPage.php','src/Integration/BaseIntegration.php','templates/admin/setup-status.php','templates/admin/tracking-numbers.php','readme-tabs/call-bridge.php']);let protectedCount=0;
