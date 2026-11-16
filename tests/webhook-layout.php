@@ -1,6 +1,6 @@
 <?php
 /** Local template checks; no WordPress bootstrap, database, provider or real data. */
-namespace SiteEngine\CallBridge\Admin { final class Menu { public const CAP='manage_options'; } }
+namespace SiteEngine\CallBridge\Admin { final class Menu { public const CAP='manage_options'; public static function url($tab){return \admin_url('admin.php?page=secb-settings&tab='.$tab);} } }
 namespace {
 error_reporting(E_ALL);
 set_error_handler(static function($n,$s,$file,$line){throw new \ErrorException($s,0,$n,$file,$line);});

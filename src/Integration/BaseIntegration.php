@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace SiteEngine\CallBridge\Integration;
 use SiteEngine\CallBridge\Admin\Menu;
-use SiteEngine\CallBridge\Admin\SettingsPage;
 use SiteEngine\CallBridge\Support\Readiness;
 defined('ABSPATH') || exit;
 final class BaseIntegration
@@ -21,7 +20,7 @@ final class BaseIntegration
         $modules = is_array($modules) ? $modules : [];
         $modules['call-bridge'] = [
             'title'=>'Call Bridge', 'menu_title'=>'Call Bridge', 'page_slug'=>Menu::SLUG_SETTINGS,
-            'capability'=>Menu::CAP, 'order'=>40, 'render'=>[SettingsPage::class,'render'],
+            'capability'=>Menu::CAP, 'order'=>40, 'render'=>[Menu::class,'render'],
             'status_callback'=>[self::class,'status'], 'requirements'=>[], 'notice'=>false,
             'description'=>'Twilio call tracking, setup guidance and configuration status.',
         ];

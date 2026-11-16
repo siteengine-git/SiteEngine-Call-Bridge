@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.8 - 2026-11-16 (administration tabs review candidate)
+
+- Consolidate CB administration into one Call Bridge entry with Setup & Status,
+  Tracking Numbers, Call Log and Help & Reference tabs; default to Setup & Status.
+- Preserve legacy page/edit routes, capability and nonce boundaries, handlers and
+  number notices. Return save/delete actions to the Numbers tab. Keep shared Base
+  Help, other modules and standalone fallback navigation intact.
+- Reuse existing renderers with embedded headings and native WordPress link tabs.
+  No schema, provider, calling, recording, DNI or integration change; DB 1.1.0.
+
 ## 0.1.7 - 2026-11-11 (unaccepted forward-only capture candidate)
 
 - New allocations persist their selected pool; new call inserts capture a versioned canonical-identity-bound original lease/number observation and UTC receipt time. Never reconstruct historical capture from current settings.

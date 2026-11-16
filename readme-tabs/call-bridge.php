@@ -8,7 +8,7 @@ if(!current_user_can('manage_options'))return;
 ?>
 <h2>Call Bridge operations guide</h2>
 <p>Call Bridge handles Twilio calls, dynamic number insertion (DNI), exclusive leases, attribution and internal duration/outcome qualification. Configuration completeness never proves calling acceptance.</p>
-<p><a href="<?php echo esc_url(admin_url('admin.php?page=secb-settings')); ?>">Setup &amp; Status</a> · <a href="<?php echo esc_url(admin_url('admin.php?page=secb-numbers')); ?>">Tracking Numbers</a> · <a href="<?php echo esc_url(admin_url('admin.php?page=secb-calls')); ?>">Call Log</a></p>
+<p><a href="<?php echo esc_url(\SiteEngine\CallBridge\Admin\Menu::url('setup')); ?>">Setup &amp; Status</a> · <a href="<?php echo esc_url(\SiteEngine\CallBridge\Admin\Menu::url('numbers')); ?>">Tracking Numbers</a> · <a href="<?php echo esc_url(\SiteEngine\CallBridge\Admin\Menu::url('calls')); ?>">Call Log</a></p>
 <h3>Prerequisites and secure provisioning</h3>
 <p>Use WordPress 6.4+, PHP 8.1+, database access and required extensions including mysqli, mbstring, JSON, hash and OpenSSL. Verify web PHP separately from CLI PHP. Base is optional: it supplies shared facts/navigation and this tab; CB retains standalone pages without it. Webhooks need reachable HTTPS, correct proxy reconstruction and an owned Voice-capable Twilio number.</p>
 <p>Have the administrator preserve the existing external configuration outside the web root and replaceable plugin directory. Define <code>SECB_CONFIG_FILE</code> before plugin loading and use secret-file permissions readable by the actual web owner. Never copy another site's secrets or place them in wp_options, JavaScript, Git, tickets or screenshots. This UI neither edits nor displays credentials.</p>

@@ -1,13 +1,13 @@
 <?php
 defined('ABSPATH') || exit;
 if(!current_user_can(\SiteEngine\CallBridge\Admin\Menu::CAP))return;
+$embedded = $embedded ?? false;
 ?>
-<div class="wrap">
-<h1>Call Bridge — Setup &amp; Status</h1>
+<?php if(!$embedded): ?><div class="wrap"><h1>Call Bridge — Setup &amp; Status</h1><?php else: ?><h2>Setup &amp; Status</h2><?php endif; ?>
 <p><strong><?php echo esc_html($readiness['label']); ?></strong></p>
 <p><?php echo esc_html($readiness['acceptance']); ?></p>
-<p><a class="button" href="<?php echo esc_url(admin_url('admin.php?page=secb-numbers')); ?>">Tracking Numbers</a>
-<a class="button" href="<?php echo esc_url(admin_url('admin.php?page=secb-calls')); ?>">Call Log</a>
+<p><a class="button" href="<?php echo esc_url(\SiteEngine\CallBridge\Admin\Menu::url('numbers')); ?>">Tracking Numbers</a>
+<a class="button" href="<?php echo esc_url(\SiteEngine\CallBridge\Admin\Menu::url('calls')); ?>">Call Log</a>
 <a class="button" href="<?php echo esc_url($helpUrl); ?>">Help &amp; Reference</a></p>
 <p>This page is read-only. It does not save settings, provision numbers, change webhooks or place calls.</p>
 <h2>Configuration checklist</h2>
@@ -65,4 +65,4 @@ if(!current_user_can(\SiteEngine\CallBridge\Admin\Menu::CAP))return;
 </div>
 <?php endif; ?>
 <p>For pools, safe exhaustion/restore, diagnostic permissions and troubleshooting, read <a href="<?php echo esc_url($helpUrl); ?>">Call Bridge Help &amp; Reference</a>. Twilio is the only supported provider.</p>
-</div>
+<?php if(!$embedded): ?></div><?php endif; ?>

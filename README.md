@@ -1,4 +1,14 @@
-# SiteEngine Call Bridge 0.1.7 — unaccepted forward-only capture candidate
+# SiteEngine Call Bridge 0.1.8 — administration tabs review candidate
+
+One Call Bridge menu entry opens Setup & Status, Tracking Numbers, Call Log and
+Help & Reference as native WordPress navigation tabs. The existing settings slug,
+legacy Numbers/Call Log URLs, number-edit links and save/delete actions remain
+compatible. Shared Base Help and standalone navigation remain supported.
+
+This navigation-only successor preserves the accepted 0.1.7 core runtime and
+database version 1.1.0. No provider, DNI, credential, qualification or integration
+behavior is added. Stable 0.1.7 and its delivery remain authoritative until review.
+The following prospective capture description is retained from that release.
 
 Prospective calls now persist versioned original reservation facts and an explicit
 server UTC capture observation on first insertion. New allocations persist their
@@ -8,8 +18,8 @@ calls/leases; install and verify only in the assigned isolated target. The nativ
 CB-owned fixture harness/runbook is tools/acceptance/CALL-CAPTURE-RUNBOOK.md.
 Consent references are not authoritative consent, and this is not a Google exporter.
 
-The main-Alma accepted development runtime remains 0.1.4 at
-ccc7d96f6c9cbc8703fac34032aa2915c2ce3a1f (Milestone 4 accepted).
+The accepted parent is core stable 0.1.7 at
+480b4ca2def17687a4db80e36891d03bf05ed003 (DB 1.1.0).
 This successor preserves the 0.1.5 call-evidence work and corrects the Call Log
 header to Time (stored), explaining that no timezone conversion is applied.
 Historical timestamps are not rewritten or relabelled as UTC. It includes the

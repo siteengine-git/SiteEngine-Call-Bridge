@@ -35,7 +35,12 @@ function register_activation_hook($a,$b){}
 function register_deactivation_hook($a,$b){}
 function admin_url($s){return 'https://fixture.invalid/wp-admin/'.$s;}
 function home_url(){return 'https://fixture.invalid/subsite';}
-function get_option($n,$default=''){return $n==='se_cb_db_version'?'1.0.0':$default;}
+function get_option($n,$default=''){return $n==='se_cb_db_version'?'1.1.0':$default;}
+function esc_textarea($s){return esc_html($s);}
+function selected($a,$b){if($a===$b)echo 'selected="selected"';}
+function checked($a){if($a)echo 'checked="checked"';}
+function wp_nonce_field($action){echo '<input type="hidden" name="_wpnonce" value="fixture-nonce">';}
+function submit_button($s){echo '<button type="submit">'.esc_html($s).'</button>';}
 function wp_next_scheduled($n){return 1234567890;}
 function wp_list_pluck($a,$k){return array_column($a,$k);}
 function trailingslashit($s){return rtrim($s,'/\\').'/';}
@@ -53,6 +58,9 @@ function add_submenu_page($parent,$title,$menu,$cap,$slug,$render,$pos=null){
     $GLOBALS['submenu'][$parent][]=[$menu,$cap,$slug];return $parent.'_page_'.$slug;
 }
 function remove_menu_page($slug){}
+function remove_submenu_page($parent,$slug){
+    $GLOBALS['submenu'][$parent]=array_values(array_filter($GLOBALS['submenu'][$parent]??[],fn($p)=>$p[2]!==$slug));
+}
 function mutation($n){$GLOBALS['mutations'][]=$n;throw new RuntimeException('Forbidden mutation/HTTP '.$n);}
 function update_option(...$a){return mutation(__FUNCTION__);}
 function add_option(...$a){return mutation(__FUNCTION__);}
@@ -68,8 +76,9 @@ class FixtureDb {
     public string $prefix='wp_';
     public function esc_like($s){return addcslashes($s,'_%\\');}
     public function prepare($s,$arg){return str_replace('%s',"'".$arg."'",$s);}
-    public function get_var($s){++$GLOBALS['reads'];if(!preg_match("/^SHOW TABLES LIKE '(.+)'$/",$s,$m))return mutation('unexpected-query');return str_replace('\\','',$m[1]);}
-    public function get_row($s,$format){++$GLOBALS['reads'];if(!str_starts_with($s,'SELECT COUNT(*) AS total'))return mutation('unexpected-row-query');return $GLOBALS['number_counts'];}
+    public function get_var($s){++$GLOBALS['reads'];if($s==='SELECT COUNT(*) FROM wp_se_cb_calls')return 0;if(!preg_match("/^SHOW TABLES LIKE '(.+)'$/",$s,$m))return mutation('unexpected-query');return str_replace('\\','',$m[1]);}
+    public function get_row($s,$format){++$GLOBALS['reads'];if(str_starts_with($s,'SELECT * FROM wp_se_cb_tracking_numbers WHERE id='))return ['id'=>4,'display_label'=>'<script>Fixture</script>','phone_number'=>'+10000000071','forward_to'=>'+10000000079'];if(!str_starts_with($s,'SELECT COUNT(*) AS total'))return mutation('unexpected-row-query');return $GLOBALS['number_counts'];}
+    public function get_results($s,$format){++$GLOBALS['reads'];if($s==='SELECT * FROM wp_se_cb_tracking_numbers ORDER BY is_active DESC, display_label ASC, phone_number ASC'||str_starts_with($s,'SELECT * FROM wp_se_cb_calls ORDER BY created_at DESC'))return [];return mutation('unexpected-results-query');}
     public function __call($n,$a){return mutation('wpdb-'.$n);}
 }
 $GLOBALS['wpdb']=new FixtureDb();
@@ -101,7 +110,7 @@ $passed=0;$failed=0;
 function check($ok,$name){global $passed,$failed;if($ok){++$passed;echo "PASS $name\n";}else{++$failed;echo "FAIL $name\n";}}
 function capture($fn){ob_start();try{$fn();return ob_get_contents();}finally{ob_end_clean();}}
 function denied($fn){try{$fn();return false;}catch(RuntimeException $e){return $e->getMessage()==='permission-denied';}}
-check(SECB_VERSION==='0.1.4'&&SECB_DB_VERSION==='1.0.0','candidate release and unchanged DB metadata');
+check(SECB_VERSION==='0.1.8'&&SECB_DB_VERSION==='1.1.0','candidate release and unchanged DB metadata');
 check(FixtureInstaller::$boots===1,'boot still invokes installer once (isolated adapter, not real migration)');
 check(isset($GLOBALS['hooks']['siteengine_modules']),'actual plugin boot registers module before admin_menu');
 check(isset($GLOBALS['hooks']['admin_post_secb_save_number'],$GLOBALS['hooks']['admin_post_secb_delete_number']),'existing save/delete action hooks remain');
@@ -111,16 +120,35 @@ check(isset($modules['call-bridge'])&&$modules['call-bridge']['page_slug']==='se
 check($modules['call-bridge']['requirements']===[]&&$modules['call-bridge']['capability']==='manage_options','shared facts optional; page capability explicit');
 check(isset(Integration::modules(['foreign'=>['title'=>'Foreign']])['foreign']),'module filter preserves unrelated registrations');
 foreach(['secb-settings','secb-numbers','secb-calls'] as $slug){
-    $pages=array_values(array_filter($GLOBALS['registered'],fn($p)=>$p['kind']==='sub'&&$p['slug']===$slug));
+    $pages=array_values(array_filter($GLOBALS['registered'],fn($p)=>$p['slug']===$slug));
     check(count($pages)===1,'one submenu registration for '.$slug);
-    check($pages[0]['parent']===($mode==='base'?'siteengine-options':'secb-numbers'),'correct parent for '.$slug);
+    check($pages[0]['parent']===($mode==='base'?'siteengine-options':($slug==='secb-settings'?null:'secb-settings')),'correct parent for '.$slug);
     check(is_callable($pages[0]['render'])&&$pages[0]['cap']==='manage_options','working guarded renderer for '.$slug);
 }
-check(count(array_filter($GLOBALS['registered'],fn($p)=>$p['kind']==='top'&&$p['slug']==='secb-numbers'))===($mode==='base'?0:1),'no duplicate top menu; standalone fallback');
+check(count(array_filter($GLOBALS['registered'],fn($p)=>$p['kind']==='top'&&$p['slug']==='secb-settings'))===($mode==='base'?0:1),'no duplicate top menu; standalone fallback');
+check(count(array_filter($GLOBALS['submenu']['siteengine-options']??[],fn($p)=>in_array($p[2],['secb-settings','secb-numbers','secb-calls'],true)))===($mode==='base'?1:0),'single visible CB entry under Base');
 $f=Readiness::inspect();
 check($f['numbers']===['total'=>2,'active'=>2,'incomplete'=>0,'recording'=>0],'inspection reads only aggregate routing counts');
 $before=$GLOBALS['reads'];Readiness::current();$after=$GLOBALS['reads'];Readiness::current();
 check($GLOBALS['reads']===$after&&$after>$before,'request-local inspection cache avoids duplicate queries');
+use SiteEngine\CallBridge\Admin\Menu;
+foreach([
+    [[], 'setup'], [['tab'=>'numbers'],'numbers'], [['tab'=>'calls'],'calls'], [['tab'=>'help'],'help'],
+    [['page'=>'secb-numbers','edit'=>'4'],'numbers'], [['page'=>'secb-calls','tab'=>'help'],'calls'],
+    [['page'=>'secb-settings','view'=>'help'],'help'], [['tab'=>['numbers']],'setup'], [['tab'=>'<script>bad</script>'],'setup'],
+] as [$query,$expected]) {
+    $_GET=$query+['page'=>'secb-settings'];
+    check(Menu::selectedTab()===$expected,'canonical/legacy/invalid route resolves '.json_encode($query));
+    $screen=capture([Menu::class,'render']);
+    check(substr_count($screen,'<a class="nav-tab')===4&&substr_count($screen,'aria-current="page"')===1,'four accessible section links, one selected');
+    check(substr_count($screen,'<h1>')===1,'single page heading with embedded original renderer');
+    if(isset($query['edit']))check(str_contains($screen,'Edit Tracking Number')&&str_contains($screen,'&lt;script&gt;Fixture&lt;/script&gt;'),'legacy edit opens escaped existing editor');
+}
+$_GET=['page'=>'secb-numbers','edit'=>'4'];
+check(Menu::submenuFile('foreign')==='secb-settings'&&Menu::parentFile('foreign')===($mode==='base'?'siteengine-options':'secb-settings'),'legacy route highlights canonical menu');
+$_GET=['page'=>'foreign'];check(Menu::parentFile('keep')==='keep'&&Menu::submenuFile('keep')==='keep','other modules retain navigation');
+$_GET=[];
+
 $good=$f;$good['external']='readable';$good['extensions']=array_fill_keys(array_keys($f['extensions']),true);$good['url']='https://fixture.invalid';
 $good['account']=true;$good['token']=true;$good['playback']=false;
 $state=Readiness::evaluate($good);
@@ -180,6 +208,7 @@ $unknown=Readiness::evaluate(array_replace($good,['numbers'=>null]));check(!str_
 foreach(['fixture-token-sentinel','fixture-key-secret-sentinel','fixture-url-secret'] as $secret)check(!str_contains($help,$secret),'Help redacts '.$secret);
 $GLOBALS['caps']=['read'=>true];check(denied([SettingsPage::class,'render']),'read-only role denied Setup & Status');
 $GLOBALS['caps']=[];
+foreach(['setup','numbers','calls','help']as$tab){$_GET=['page'=>'secb-settings','tab'=>$tab];$reads=$GLOBALS['reads'];check(denied([Menu::class,'render'])&&$reads===$GLOBALS['reads'],'non-administrator tab '.$tab.' denied before reads');}$_GET=[];
 check(denied([SettingsPage::class,'render']),'non-administrator setup denied before reads');
 $nohelp=capture(static function(){include SECB_PATH.'readme-tabs/call-bridge.php';});
 check($nohelp==='','direct Help include denies non-administrator');
