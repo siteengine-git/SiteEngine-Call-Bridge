@@ -17,6 +17,7 @@ final class SettingsPage
         }
         $readiness=Readiness::current();$business=SharedBusinessContext::read();
         $webhooks=Readiness::webhookUrls();
+        $onboarding=Onboarding::facts();
         include SECB_PATH.'templates/admin/setup-status.php';
     }
 }

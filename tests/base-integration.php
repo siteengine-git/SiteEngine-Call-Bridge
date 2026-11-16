@@ -6,8 +6,8 @@ $base=$argv[1]??'';$mode=$argv[2]??'base';
 define('ABSPATH',__DIR__.'/fixture/');
 define('ARRAY_A','ARRAY_A');
 define('SECB_CONFIG_FILE',__DIR__.'/intentionally-absent-config.php');
-define('SECB_TWILIO_ACCOUNT_SID','fixture-account-sentinel');
-define('SECB_TWILIO_AUTH_TOKEN','fixture-token-sentinel');
+define('SECB_TWILIO_ACCOUNT_SID','AC'.str_repeat('a',32));
+define('SECB_TWILIO_AUTH_TOKEN',str_repeat('b',32));
 define('SECB_TWILIO_API_KEY_SID','fixture-key-sentinel');
 define('SECB_TWILIO_API_KEY_SECRET','fixture-key-secret-sentinel');
 define('SECB_WEBHOOK_BASE_URL',$mode==='unsafe-url'?'https://credential-user:fixture-url-secret@fixture.invalid/?token=fixture-query-secret':'https://fixture.invalid/subsite');
@@ -110,7 +110,7 @@ $passed=0;$failed=0;
 function check($ok,$name){global $passed,$failed;if($ok){++$passed;echo "PASS $name\n";}else{++$failed;echo "FAIL $name\n";}}
 function capture($fn){ob_start();try{$fn();return ob_get_contents();}finally{ob_end_clean();}}
 function denied($fn){try{$fn();return false;}catch(RuntimeException $e){return $e->getMessage()==='permission-denied';}}
-check(SECB_VERSION==='0.2.0'&&SECB_DB_VERSION==='1.1.0','candidate release and unchanged DB metadata');
+check(SECB_VERSION==='0.2.1'&&SECB_DB_VERSION==='1.1.0','candidate release and unchanged DB metadata');
 check(FixtureInstaller::$boots===1,'boot still invokes installer once (isolated adapter, not real migration)');
 check(isset($GLOBALS['hooks']['siteengine_modules']),'actual plugin boot registers module before admin_menu');
 check(isset($GLOBALS['hooks']['admin_post_secb_save_number'],$GLOBALS['hooks']['admin_post_secb_delete_number']),'existing save/delete action hooks remain');
@@ -174,8 +174,8 @@ check($context['phone']['value']===($mode==='base'?'PUBLIC-ROLE':''),'public pho
 check($context['forwarding_phone']['value']===($mode==='base'?'SHARED-UNCONFIRMED':''),'forwarding field remains separate reference');
 $html=capture([SettingsPage::class,'render']);
 check(str_contains($html,'Setup &amp; Status')&&str_contains($html,'Tracking Numbers')&&str_contains($html,'Call Log'),'administrator setup renderer and navigation');
-check(!str_contains($html,'<form')&&!str_contains($html,'type="password"'),'no settings or credential editor');
-foreach(['fixture-account-sentinel','fixture-token-sentinel','fixture-key-sentinel','fixture-key-secret-sentinel','fixture-url-secret','fixture-query-secret'] as $secret)check(!str_contains($html,$secret),'redacts '.$secret);
+check(substr_count($html,'<form')===1&&!str_contains($html,'type="password"')&&str_contains($html,'secb_onboarding_mode'),'one nonsecret mode form; credential entry delegated to protected Base UI');
+foreach(['AC'.str_repeat('a',32),str_repeat('b',32),'fixture-key-sentinel','fixture-key-secret-sentinel','fixture-url-secret','fixture-query-secret'] as $secret)check(!str_contains($html,$secret),'redacts '.$secret);
 check(!str_contains($html,'<img src=x')&&!str_contains($html,'javascript:fixture-danger'),'shared text escaped and unsafe policy URL removed');
 check(str_contains($html,'forward_to')&&str_contains($html,'unconfirmed reference'),'phone roles explicitly separated without routing substitution');
 $urls=Readiness::webhookUrls();
@@ -205,7 +205,7 @@ foreach(['localStorage','pool sizing','Whispers','Duration qualification','Recor
  check(stripos($help,$topic)!==false,'Help covers '.$topic);
 }
 $unknown=Readiness::evaluate(array_replace($good,['numbers'=>null]));check(!str_contains(json_encode($unknown),'Not required while recording is off'),'failed count read never claims recording is disabled');
-foreach(['fixture-token-sentinel','fixture-key-secret-sentinel','fixture-url-secret'] as $secret)check(!str_contains($help,$secret),'Help redacts '.$secret);
+foreach([str_repeat('b',32),'fixture-key-secret-sentinel','fixture-url-secret'] as $secret)check(!str_contains($help,$secret),'Help redacts '.$secret);
 $GLOBALS['caps']=['read'=>true];check(denied([SettingsPage::class,'render']),'read-only role denied Setup & Status');
 $GLOBALS['caps']=[];
 foreach(['setup','numbers','calls','help']as$tab){$_GET=['page'=>'secb-settings','tab'=>$tab];$reads=$GLOBALS['reads'];check(denied([Menu::class,'render'])&&$reads===$GLOBALS['reads'],'non-administrator tab '.$tab.' denied before reads');}$_GET=[];

@@ -13,6 +13,7 @@ function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
 function esc_attr($s){return esc_html($s);}
 function esc_url($s){return esc_html($s);}
 function admin_url($s){return 'https://fixture.invalid/wp-admin/'.$s;}
+function wp_nonce_field($s){echo '<input type="hidden" name="_wpnonce" value="fixture-nonce">';}
 require dirname(__DIR__).'/src/Support/Config.php';
 require dirname(__DIR__).'/src/Support/Readiness.php';
 $hooks=\SiteEngine\CallBridge\Support\Readiness::webhookUrls();
@@ -22,6 +23,7 @@ function render_layout($path,$webhooks){
         'facts'=>['lease_minutes'=>30,'session_days'=>90]];
     $business=array_fill_keys(['business_name','phone','forwarding_phone','privacy_policy_url'],['value'=>'']);
     $helpUrl=admin_url('admin.php?page=read-me-file&tab=call-bridge');
+    $onboarding=['credentials'=>['source'=>'Unavailable','local'=>'Not configured','action'=>'Configure credentials'],'playback'=>['source'=>'Optional','local'=>'Not configured'],'base_available'=>false,'mode'=>'direct','routes'=>[]];
     ob_start();try{include $path;return ob_get_contents();}finally{ob_end_clean();}
 }
 function dom($html){$prior=libxml_use_internal_errors(true);try{$d=new \DOMDocument();$d->loadHTML('<?xml encoding="UTF-8">'.$html);return new \DOMXPath($d);}finally{libxml_clear_errors();libxml_use_internal_errors($prior);}}
@@ -36,7 +38,7 @@ foreach($cards as $i=>$card){
     $region=$xp->query('.//div[@role="region"]',$card)->item(0);
     check($region->getAttribute('tabindex')==='0'&&$region->getAttribute('aria-label')===$hooks[$i]['label'].' URL','named keyboard-focusable URL region '.$i);
 }
-check($xp->query('//form|//input|//button|//script')->length===0,'no editors, action controls or scripts introduced');
+check($xp->query('//form')->length===1&&$xp->query('//input[@name="candidate"]|//input[contains(@name,"candidate[")]|//script')->length===0,'only nonsecret onboarding mode form; no credential editor or scripts');
 if(isset($argv[1])&&$argv[1]!=='-'){
     $old=dom(render_layout($argv[1],$hooks));
     $oldCodes=$old->query('//table[last()]//td/code');

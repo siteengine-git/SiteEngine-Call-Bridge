@@ -34,7 +34,7 @@ final class BaseIntegration
         // Original Base routes setup_required to Business Data. Its supported
         // warning/Open path preserves the CB destination without a Base patch.
         return ['status'=>'warning','label'=>Readiness::current()['label'],
-            'message'=>'Open Call Bridge to review setup. Live calling, attribution and playback acceptance remain pending.'];
+            'message'=>'Open Call Bridge for credential authority, routing and setup. Configuration checks do not certify live acceptance.'];
     }
     public static function helpDirectories($directories): array
     {

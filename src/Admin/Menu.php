@@ -14,6 +14,7 @@ final class Menu
         add_action('admin_menu',[$this,'addMenu'],120);
         add_action('admin_post_secb_save_number',[TrackingNumbersPage::class,'handleSave']);
         add_action('admin_post_secb_delete_number',[TrackingNumbersPage::class,'handleDelete']);
+        add_action('admin_post_secb_onboarding_mode',[Onboarding::class,'saveMode']);
         // Core authorizes admin menus before admin_init; redirect at init instead.
         add_action('init', [self::class, 'redirectLegacy'], 0);
         add_filter('parent_file', [self::class, 'parentFile']);

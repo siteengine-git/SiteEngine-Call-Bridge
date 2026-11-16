@@ -14,12 +14,14 @@ final class Readiness
     {
         global $wpdb;
         $f=[
+            'credential_status'=>\SiteEngine\CallBridge\Integration\BaseCredentials::status('webhook'),
+            'onboarding_mode'=>\SiteEngine\CallBridge\Admin\Onboarding::mode(),
+            'central_routes'=>count(\SiteEngine\CallBridge\Admin\Onboarding::routes()),
             'gateway_clients'=>count(Config::gatewayClients()),
             'external'=>!defined('SECB_CONFIG_FILE')?'not_defined':
                 (is_string(SECB_CONFIG_FILE)&&SECB_CONFIG_FILE!==''&&is_readable(SECB_CONFIG_FILE)?'readable':'unreadable'),
             'account'=>Config::twilioAccountSid()!==null, 'token'=>Config::twilioAuthToken()!==null,
-            'playback'=>(Config::twilioApiKeySid()!==null&&Config::twilioApiKeySecret()!==null)
-                ||(Config::twilioAccountSid()!==null&&Config::twilioAuthToken()!==null),
+            'playback'=>Config::recordingCredentials()!==null,
             'url'=>self::publicBaseUrl(), 'lease_minutes'=>Config::leaseMinutes(),
             'session_days'=>Config::sessionTtlDays(), 'debug'=>Config::debugLog(),
             'passthrough'=>Config::passthroughMode(), 'extensions'=>[], 'tables'=>[],
@@ -62,6 +64,9 @@ final class Readiness
             $f['external']==='unreadable');
         $add('Account SID',$f['account']?'Present, unverified':'Missing','Required account identity; values are never displayed',!$f['account']);
         $add('Webhook Auth Token',$f['token']?'Present, unverified':'Missing','Required for signatures; API keys do not replace it',!$f['token']);
+        if(isset($f['credential_status'])){
+            $c=$f['credential_status'];$add('Credential authority',$c['source'].' — '.$c['local'],$c['action'],!$c['configured']);
+        }
         $add('Public webhook base',$f['url']!==''?'Configured, unverified':'Needs attention','Public HTTPS base without embedded credentials, query or fragment; verify the actual proxy URL',$f['url']==='');
         $extensions=!in_array(false,$f['extensions'],true);
         $add('PHP extensions',$extensions?'Present':'Missing',implode(', ',array_keys($f['extensions'])).'; current PHP runtime only',!$extensions);
@@ -79,6 +84,11 @@ final class Readiness
         $add('Operating mode',$f['passthrough']?'Passthrough enabled':'Normal tracking','Passthrough bypasses normal attribution/logging, not per-number recording');
         $add('Central routing receiver',empty($f['gateway_clients'])?'Off (direct routing supported)':'Configured, unverified',
             'Optional authenticated handoffs. Direct Twilio signatures remain required; central routing acceptance is separate');
+        if(($f['onboarding_mode']??'direct')==='central'){
+            $central=($f['central_routes']??0)>0;
+            $add('Selected central route',$central?'Receiver configuration present; activation unverified':'Not provisioned',
+                'Central requires an approved gateway registry and this installation’s private receiver configuration. Selecting a mode never changes provider webhooks.',!$central);
+        }
         if($f['inspection_error'])$add('Inspection','Incomplete','Some reads failed; inspect diagnostics privately',true);
         $complete=$missing===[];
         return ['facts'=>$f,'rows'=>$rows,'missing'=>$missing,'configuration_complete'=>$complete,

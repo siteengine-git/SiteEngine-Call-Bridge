@@ -16,30 +16,26 @@ final class Config
 {
     public static function twilioAccountSid(): ?string
     {
-        return defined('SECB_TWILIO_ACCOUNT_SID') && SECB_TWILIO_ACCOUNT_SID !== ''
-            ? (string) SECB_TWILIO_ACCOUNT_SID
-            : null;
+        if(class_exists(\SiteEngine\CallBridge\Integration\BaseCredentials::class))return \SiteEngine\CallBridge\Integration\BaseCredentials::pair('webhook')['account_sid']??null;
+        return defined('SECB_TWILIO_ACCOUNT_SID')&&SECB_TWILIO_ACCOUNT_SID!==''?(string)SECB_TWILIO_ACCOUNT_SID:null;
     }
 
     public static function twilioAuthToken(): ?string
     {
-        return defined('SECB_TWILIO_AUTH_TOKEN') && SECB_TWILIO_AUTH_TOKEN !== ''
-            ? (string) SECB_TWILIO_AUTH_TOKEN
-            : null;
+        if(class_exists(\SiteEngine\CallBridge\Integration\BaseCredentials::class))return \SiteEngine\CallBridge\Integration\BaseCredentials::pair('webhook')['auth_token']??null;
+        return defined('SECB_TWILIO_AUTH_TOKEN')&&SECB_TWILIO_AUTH_TOKEN!==''?(string)SECB_TWILIO_AUTH_TOKEN:null;
     }
 
     public static function twilioApiKeySid(): ?string
     {
-        return defined('SECB_TWILIO_API_KEY_SID') && SECB_TWILIO_API_KEY_SID !== ''
-            ? (string) SECB_TWILIO_API_KEY_SID
-            : null;
+        if(class_exists(\SiteEngine\CallBridge\Integration\BaseCredentials::class))return \SiteEngine\CallBridge\Integration\BaseCredentials::pair('playback')['api_key_sid']??null;
+        return defined('SECB_TWILIO_API_KEY_SID')&&SECB_TWILIO_API_KEY_SID!==''?(string)SECB_TWILIO_API_KEY_SID:null;
     }
 
     public static function twilioApiKeySecret(): ?string
     {
-        return defined('SECB_TWILIO_API_KEY_SECRET') && SECB_TWILIO_API_KEY_SECRET !== ''
-            ? (string) SECB_TWILIO_API_KEY_SECRET
-            : null;
+        if(class_exists(\SiteEngine\CallBridge\Integration\BaseCredentials::class))return \SiteEngine\CallBridge\Integration\BaseCredentials::pair('playback')['api_key_secret']??null;
+        return defined('SECB_TWILIO_API_KEY_SECRET')&&SECB_TWILIO_API_KEY_SECRET!==''?(string)SECB_TWILIO_API_KEY_SECRET:null;
     }
 
     /** @return array{username:string,password:string}|null */
@@ -48,6 +44,8 @@ final class Config
         $keySid = self::twilioApiKeySid();
         $keySecret = self::twilioApiKeySecret();
         if ($keySid !== null && $keySecret !== null) {
+            if(class_exists(\SiteEngine\CallBridge\Integration\BaseCredentials::class)
+                && !\SiteEngine\CallBridge\Integration\BaseCredentials::validate(['api_key_sid'=>$keySid,'api_key_secret'=>$keySecret],'playback'))return null;
             return ['username' => $keySid, 'password' => $keySecret];
         }
 

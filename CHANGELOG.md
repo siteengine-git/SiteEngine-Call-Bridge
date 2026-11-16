@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-11-16 (protected onboarding review candidate)
+
+- Register required Twilio pair and separate optional playback API pair through Base credentials-1; use its native protected write-only staging/activation UI and runtime reads. Preserve external authority and block shadowed saves or partial-field mixing.
+- Complete tabbed setup guidance, local/source errors, direct/central mode and exact applicable URLs, phone roles, number/DNI/qualification/recording steps and one combined manual checklist.
+- Preserve central routing, direct signature logic, recording transport, schema and evidence API. DB remains 1.1.0. No provider changes/calls/Climatrol deployment.
+
+
 ## 0.2.0 - 2026-11-16 (central routing review candidate)
 
 - Optional standalone multi-client routing component with explicit registry, provider signatures, durable per-call destination pinning, bounded transport and cached initial Voice responses.
