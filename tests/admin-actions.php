@@ -10,6 +10,7 @@ function check_admin_referer($action){if(!$GLOBALS['nonce_valid'])wp_die('invali
 function sanitize_text_field($s){return strip_tags($s);}
 function sanitize_textarea_field($s){return strip_tags($s);}
 function sanitize_key($s){return preg_replace('/[^a-z0-9_-]/','',strtolower($s));}
+function wp_unslash($s){return $s;}
 function admin_url($s){return 'https://fixture.invalid/wp-admin/'.$s;}
 function add_query_arg($args,$url){return $url.'?'.http_build_query($args);}
 function wp_safe_redirect($url){throw new ActionStop($url,302);}
@@ -40,4 +41,12 @@ check($r->status===403&&$GLOBALS['wpdb']->rows===$before,'invalid nonce denies b
 $GLOBALS['allowed']=false;$GLOBALS['nonce_valid']=true;$r=save();
 check($r->status===403&&$GLOBALS['wpdb']->rows===$before,'subscriber cannot save or change data');
 foreach(['edit'=>7,'paged'=>3]as$key=>$value){parse_str(parse_url(Menu::url('numbers',[$key=>$value]),PHP_URL_QUERY),$q);check($q[$key]==$value&&$q['tab']==='numbers','Numbers URL preserves '.$key);}
+$GLOBALS['allowed']=true;
+foreach(['secb-numbers'=>'numbers','secb-calls'=>'calls']as$slug=>$tab){
+    $_GET=['page'=>$slug,'edit'=>'7','paged'=>'3','notice'=>'updated'];
+    try{Menu::redirectLegacy();throw new RuntimeException('missing legacy redirect');}catch(ActionStop $r){parse_str(parse_url($r->url,PHP_URL_QUERY),$q);check($r->status===302&&$q===['edit'=>'7','paged'=>'3','notice'=>'updated','page'=>'secb-settings','tab'=>$tab],'early legacy redirect preserves guarded query state '.$slug);}
+}
+$GLOBALS['allowed']=false;
+try{Menu::redirectLegacy();throw new RuntimeException('missing legacy denial');}catch(ActionStop $r){check($r->status===403,'legacy redirect denies subscriber before redirect');}
+$_GET=['page'=>'foreign'];Menu::redirectLegacy();check(true,'unrelated admin page is not redirected');
 echo $GLOBALS['pass']." PASS / 0 FAIL; actual action/repository with isolated adapters\n";

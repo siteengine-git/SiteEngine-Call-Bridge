@@ -14,6 +14,7 @@ final class Menu
         add_action('admin_menu',[$this,'addMenu'],120);
         add_action('admin_post_secb_save_number',[TrackingNumbersPage::class,'handleSave']);
         add_action('admin_post_secb_delete_number',[TrackingNumbersPage::class,'handleDelete']);
+        add_action('admin_init', [self::class, 'redirectLegacy'], 0);
         add_filter('parent_file', [self::class, 'parentFile']);
         add_filter('submenu_file', [self::class, 'submenuFile']);
     }
@@ -46,6 +47,19 @@ final class Menu
     {
         if (!in_array($tab, ['setup','numbers','calls','help'], true)) $tab = 'setup';
         return add_query_arg(array_merge($args, ['page'=>self::SLUG_SETTINGS, 'tab'=>$tab]), admin_url('admin.php'));
+    }
+    public static function redirectLegacy(): void
+    {
+        $page = $_GET['page'] ?? null;
+        if (!is_string($page) || !in_array($page, [self::SLUG_NUMBERS,self::SLUG_CALLS], true)) return;
+        if (!current_user_can(self::CAP)) wp_die('Insufficient permissions.', '', ['response'=>403]);
+        $args = [];
+        foreach (['edit','paged'] as $name) {
+            if (isset($_GET[$name]) && is_scalar($_GET[$name])) $args[$name] = max(0, (int)$_GET[$name]);
+        }
+        if (isset($_GET['notice']) && is_string($_GET['notice'])) $args['notice'] = sanitize_key((string)wp_unslash($_GET['notice']));
+        wp_safe_redirect(self::url($page === self::SLUG_NUMBERS ? 'numbers' : 'calls', $args));
+        exit;
     }
     private static function isOwnPage(): bool
     {
