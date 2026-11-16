@@ -190,16 +190,15 @@ final class TwilioVoiceController
             $tw->say($notice);
         }
 
-        $base = Config::webhookBaseUrl() . '/wp-json/' . SECB_REST_NAMESPACE;
         $dial = [
             'answerOnBridge' => 'true',
             'timeout'        => '22',
-            'action'         => $base . '/twilio/status',
+            'action'         => Config::callbackUrl('status'),
             'method'         => 'POST',
         ];
         if (!empty($trackingRow['record_calls'])) {
             $dial['record']                        = 'record-from-answer-dual';
-            $dial['recordingStatusCallback']       = $base . '/twilio/recording';
+            $dial['recordingStatusCallback']       = Config::callbackUrl('recording');
             $dial['recordingStatusCallbackEvent']  = 'completed';
             $dial['recordingStatusCallbackMethod'] = 'POST';
         }
@@ -210,7 +209,7 @@ final class TwilioVoiceController
             $msg = $isRepeat ? ($trackingRow['whisper_repeat'] ?? '') : ($trackingRow['whisper_new'] ?? '');
             $msg = trim((string) $msg);
             if ($msg !== '') {
-                $whisperUrl = $base . '/twilio/whisper?msg=' . rawurlencode($msg);
+                $whisperUrl = Config::callbackUrl('whisper', ['msg'=>$msg]);
             }
         }
         $tw->number((string) $trackingRow['forward_to'], $whisperUrl);

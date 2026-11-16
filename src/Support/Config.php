@@ -72,6 +72,20 @@ final class Config
         return defined('SECB_DEBUG_LOG') && SECB_DEBUG_LOG === true;
     }
 
+    /** Optional receiver configuration lives in the existing external config file. */
+    public static function gatewayClients(): array
+    { return defined('SECB_GATEWAY_CLIENTS') && is_array(SECB_GATEWAY_CLIENTS) ? SECB_GATEWAY_CLIENTS : []; }
+    public static function gatewayNonceDirectory(): string
+    { return defined('SECB_GATEWAY_NONCE_DIR') && is_string(SECB_GATEWAY_NONCE_DIR) ? SECB_GATEWAY_NONCE_DIR : ''; }
+    public static function callbackUrl(string $event, array $query = []): string
+    {
+        if (class_exists(\SiteEngine\CallBridge\Gateway\Context::class, false) && \SiteEngine\CallBridge\Gateway\Context::active()) {
+            return \SiteEngine\CallBridge\Gateway\Context::callbackUrl($event, $query);
+        }
+        $url = self::webhookBaseUrl() . '/wp-json/' . SECB_REST_NAMESPACE . '/twilio/' . $event;
+        return $query === [] ? $url : $url . '?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986);
+    }
+
     public static function passthroughMode(): bool
     {
         return defined('SECB_PASSTHROUGH_MODE') && SECB_PASSTHROUGH_MODE === true;

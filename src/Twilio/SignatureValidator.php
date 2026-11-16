@@ -69,6 +69,9 @@ final class SignatureValidator
      */
     public static function validateCurrentRequest(): bool
     {
+        if (class_exists(\SiteEngine\CallBridge\Gateway\Context::class, false) && \SiteEngine\CallBridge\Gateway\Context::active()) {
+            return true; // Authenticated, scoped receiver only; no forwarding header bypass.
+        }
         $token = Config::twilioAuthToken();
         if ($token === null) {
             Logger::error('twilio_sig_missing_auth_token');

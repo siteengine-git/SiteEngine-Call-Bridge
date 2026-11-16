@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 - 2026-11-16 (central routing review candidate)
+
+- Optional standalone multi-client routing component with explicit registry, provider signatures, durable per-call destination pinning, bounded transport and cached initial Voice responses.
+- Authenticated scoped receiver with freshness/replay protection; all generated central callback URLs retain parent call/binding context. Direct signatures and callbacks remain supported.
+- Preserve client call/evidence authority, recording and external credential resolver. No schema change; DB 1.1.0. Gateway packaged distinctly; production activation and stable promotion not included.
+
+
 ## 0.1.9 - 2026-11-16 (protected recording review candidate)
 
 - Add REST nonce to administrator playback links; explicitly enforce capability and nonce.

@@ -1,0 +1,5 @@
+974ae435c556f361c76aff59af9a2f076a44159f733732c9dd8a20a299504b54  ./gateway/README.md
+7243af01c665ee60bbac2e46c4208685c870ea8fb7e5c08cb0907f32bc2bf7dc  ./gateway/Router.php
+5d04fa8a139da4a2a6af3b1e1eefc34ad6bc8176991444484b96f340587f2346  ./gateway/entry.php
+e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67  ./gateway/VERSION
+eaf802fc0bf026eb54fb6c603db67d4d8bf82f9b0319ccc9084047bee711589c  ./src/Gateway/Protocol.php

@@ -1,3 +1,7 @@
+# Call Bridge 0.2.0 — optional central-routing review candidate
+
+Optional authenticated multi-client gateway handoffs and pinned call continuity; direct routing remains supported. DB remains 1.1.0. See gateway/README.md in source and the separately packaged gateway component. Current stable delivery remains 0.1.9. Earlier release/acceptance text below is historical.
+
 Recording successor to accepted 0.1.8: nonce-authenticated administrator playback, fixed-host bounded two-channel WAV retrieval and checked recording callback persistence. Live recorded-call acceptance remains pending. DB stays 1.1.0. Stable delivery is unchanged.
 
 # SiteEngine Call Bridge 0.1.9 — protected recording review candidate

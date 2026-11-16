@@ -2,15 +2,20 @@
 /** Child-process adapter for shipped controllers (which emit and exit). No network/SQL. */
 declare(strict_types=1);
 $input=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);
-define('ABSPATH',__DIR__.'/fixture/');define('ARRAY_A','ARRAY_A');define('SECB_REST_NAMESPACE','siteengine-call/v1');
+define('ABSPATH',$input['webroot']??(__DIR__.'/fixture/'));define('ARRAY_A','ARRAY_A');define('SECB_REST_NAMESPACE','siteengine-call/v1');
+if(isset($input['gateway_clients'])){define('SECB_GATEWAY_CLIENTS',$input['gateway_clients']);define('SECB_GATEWAY_NONCE_DIR',$input['nonce_dir']);}
 define('SECB_TWILIO_AUTH_TOKEN','fixture-signing-only');define('SECB_WEBHOOK_BASE_URL','https://fixture.invalid');define('SECB_DEBUG_LOG',false);
 $_SERVER=['REQUEST_METHOD'=>$input['method']??'POST','REQUEST_URI'=>$input['uri']??'/wp-json/siteengine-call/v1/twilio/status','QUERY_STRING'=>parse_url($input['uri']??'',PHP_URL_QUERY)?:'','HTTP_X_TWILIO_SIGNATURE'=>$input['signature']??''];
 $_POST=$input['post']??[];parse_str($_SERVER['QUERY_STRING'],$_GET);$GLOBALS['status']=200;
+$_SERVER=array_replace($_SERVER,$input['server_headers']??[]);
 function wp_unslash($x){return is_array($x)?array_map('wp_unslash',$x):stripslashes((string)$x);}
+function wp_slash($x){return is_array($x)?array_map('wp_slash',$x):addslashes((string)$x);}
+function add_action($hook,$cb,$priority=10){$GLOBALS['fixture_actions'][$hook][$priority][]=$cb;}
+register_shutdown_function(static function(){ $a=$GLOBALS['fixture_actions']['shutdown']??[];ksort($a);foreach($a as$list)foreach($list as$cb)$cb(); });
 function status_header($n){$GLOBALS['status']=$n;}
 function update_option(...$a){} function wp_json_encode($x,$flags=0){return json_encode($x,$flags);}
 function home_url(){return 'https://fixture.invalid';}function mb_substr($s,$start,$len){return substr($s,$start,$len);}
-class WP_REST_Request {function get_param($n){return $_GET[$n]??$_POST[$n]??null;}}
+class WP_REST_Request {public array $query=[],$body=[];function __construct(...$args){}function get_param($n){return $this->body[$n]??$this->query[$n]??$_GET[$n]??$_POST[$n]??null;}function set_query_params($v){$this->query=$v;}function set_body_params($v){$this->body=$v;}function get_body(){return $GLOBALS['callback_input']['envelope']??'';}function get_header($n){return $GLOBALS['callback_input']['handoff_signature']??'';}}
 class CallbackDb {
  public array $rows;public array $writes=[];public string $last_error='';public int $reads=0;public int $attempts=0;public int $insert_id=10;public string $prefix='fixture_';
  function __construct(array $rows){$this->rows=$rows;}
@@ -23,7 +28,11 @@ class CallbackDb {
 $GLOBALS['callback_input']=$input;
 $wpdb=new CallbackDb($input['rows']??[]);
 $GLOBALS['callback_race']=$input['race']??null;
-register_shutdown_function(static function()use($argv){file_put_contents($argv[2],json_encode(['status'=>$GLOBALS['status'],'rows'=>$GLOBALS['wpdb']->rows,'writes'=>$GLOBALS['wpdb']->writes,'reads'=>$GLOBALS['wpdb']->reads,'attempts'=>$GLOBALS['wpdb']->attempts],JSON_THROW_ON_ERROR));});
+register_shutdown_function(static function()use($argv){file_put_contents($argv[2],json_encode(['status'=>$GLOBALS['status'],'rows'=>$GLOBALS['wpdb']->rows,'writes'=>$GLOBALS['wpdb']->writes,'reads'=>$GLOBALS['wpdb']->reads,'attempts'=>$GLOBALS['wpdb']->attempts,'gateway_context_cleared'=>!class_exists('SiteEngine\\CallBridge\\Gateway\\Context',false)||!SiteEngine\CallBridge\Gateway\Context::active(),'method_restored'=>($_SERVER['REQUEST_METHOD']??'')===($GLOBALS['callback_input']['method']??'POST')],JSON_THROW_ON_ERROR));});
 foreach(['Support/CallCapture.php','Support/Config.php','Support/Logger.php','Support/WebhookEvents.php','Support/Phone.php','Twilio/SignatureValidator.php','Twilio/TwiMLBuilder.php','DB/CallLogRepository.php','DB/TrackingNumberRepository.php','DB/AttributionSessionRepository.php','DB/NumberLeaseRepository.php'] as $p)require dirname(__DIR__).'/src/'.$p;
 if($input['mode']==='signature'){echo json_encode(SiteEngine\CallBridge\Twilio\SignatureValidator::validateCurrentRequest());exit;}
+if($input['mode']==='gateway'){
+ foreach(['Gateway/Protocol.php','Gateway/Context.php','Gateway/Receiver.php','Webhook/TwilioVoiceController.php','Webhook/TwilioStatusController.php','Webhook/TwilioRecordingController.php','Webhook/TwilioWhisperController.php','Webhook/GatewayHandoffController.php']as$p)require dirname(__DIR__).'/src/'.$p;
+ (new SiteEngine\CallBridge\Webhook\GatewayHandoffController())->handle(new WP_REST_Request());exit;
+}
 $map=['status'=>'TwilioStatusController','recording'=>'TwilioRecordingController','voice'=>'TwilioVoiceController'];$name=$map[$input['mode']];require dirname(__DIR__).'/src/Webhook/'.$name.'.php';$class='SiteEngine\CallBridge\Webhook\\'.$name;(new $class())->handle(new WP_REST_Request());

@@ -14,6 +14,7 @@ final class Readiness
     {
         global $wpdb;
         $f=[
+            'gateway_clients'=>count(Config::gatewayClients()),
             'external'=>!defined('SECB_CONFIG_FILE')?'not_defined':
                 (is_string(SECB_CONFIG_FILE)&&SECB_CONFIG_FILE!==''&&is_readable(SECB_CONFIG_FILE)?'readable':'unreadable'),
             'account'=>Config::twilioAccountSid()!==null, 'token'=>Config::twilioAuthToken()!==null,
@@ -76,6 +77,8 @@ final class Readiness
             'Optional API Key SID/Secret preferred; Account SID/Auth Token fallback. Playback acceptance is separate',$recording&&!$f['playback']);
         $add('Debug logging',$f['debug']?'On':'Off','Off is a deliberate value, not missing setup');
         $add('Operating mode',$f['passthrough']?'Passthrough enabled':'Normal tracking','Passthrough bypasses normal attribution/logging, not per-number recording');
+        $add('Central routing receiver',empty($f['gateway_clients'])?'Off (direct routing supported)':'Configured, unverified',
+            'Optional authenticated handoffs. Direct Twilio signatures remain required; central routing acceptance is separate');
         if($f['inspection_error'])$add('Inspection','Incomplete','Some reads failed; inspect diagnostics privately',true);
         $complete=$missing===[];
         return ['facts'=>$f,'rows'=>$rows,'missing'=>$missing,'configuration_complete'=>$complete,
