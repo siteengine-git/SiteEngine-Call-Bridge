@@ -58,9 +58,9 @@ final class Readiness
             $rows[]=['name'=>$name,'state'=>$state,'detail'=>$detail];
             if($blocks)$missing[]=$name;
         };
-        $add('External configuration',$f['external']==='readable'?'Configured':($f['external']==='unreadable'?'Needs attention':'Recommended'),
+        $add('External configuration',$f['external']==='readable'?'Configured':($f['external']==='unreadable'?'Needs attention':'Not required'),
             $f['external']==='readable'?'Referenced external file is readable':
-                ($f['external']==='unreadable'?'Ask the administrator to resolve the unreadable reference':'Existing inline constants still work; an external secrets file is recommended'),
+                ($f['external']==='unreadable'?'Ask the administrator to resolve the unreadable reference':'Base can store protected credentials without an external file. Existing inline or external settings remain supported'),
             $f['external']==='unreadable');
         $add('Account SID',$f['account']?'Present, unverified':'Missing','Required account identity; values are never displayed',!$f['account']);
         $add('Webhook Auth Token',$f['token']?'Present, unverified':'Missing','Required for signatures; API keys do not replace it',!$f['token']);

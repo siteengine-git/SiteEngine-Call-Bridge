@@ -1,11 +1,11 @@
-253b436632ea42830018010ef060f871cef1076baba3d3b9fe5c753f04f9faa5  ./CHANGELOG.md
+53771805f42ca9c8f037a02caedd8f2f9d13ab45b659090fc0cb72acfe79b488  ./CHANGELOG.md
 ef6ba42365f6a5a799534707125d775808020b7e3c4bf9799d45abc98382325b  ./composer.json
 a9e2f01aafc54f5a204d97fed401462e0c1abd80ea6693d3df5ebc5d0cb45954  ./config/call-bridge.example.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./index.php
-c6ca6e3274ab72093e5c8458c4e1c78b30879a06c9ae6fc8081e22377c94d483  ./ONBOARDING.md
-e7f137ec49ce75e78327f81aacff176400baeddea373ff968479207e396823a2  ./readme-tabs/call-bridge.php
-8be94f7c01bc1a148bb36195a46fb85601b87882cd9d15a4b3f1157976e7f3da  ./README.md
-ff35529f04989c93061dcba7beee1bbb43294b44bf7ef01bb2c33311f323def0  ./siteengine-call-bridge.php
+42e8f8ac7b4fd62e31497213ae0403a3e1fb5ef131c1107ce176782f34ff27a9  ./ONBOARDING.md
+aa77dc7698ce79a6d7a97376aaf0762e9b8f09356bced453cb17573d2a92647b  ./readme-tabs/call-bridge.php
+0ea4d6f690d0de65f31ed19a32897f07284db2307040bcd40103851b93b1b5c6  ./README.md
+46b9c5cf7ab442817dfd62db3fc2d91c06783b60ad172582e7c9978f55101f42  ./siteengine-call-bridge.php
 4e6cf1c262fd726b070dc1b004c51735a6d98118635d591b9e8b514ab682d78e  ./src/Admin/CallLogPage.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./src/Admin/index.php
 58bf518777ae6b98852e9fc68cadc9efcacdf74fb7d035b18491fc0330521886  ./src/Admin/Menu.php
@@ -26,7 +26,7 @@ eaf802fc0bf026eb54fb6c603db67d4d8bf82f9b0319ccc9084047bee711589c  ./src/Gateway/
 680c9752a982ab79d3e3cab904d2e019b7eb3164a559dc7453a7aa2a5e4bba48  ./src/Gateway/Receiver.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./src/index.php
 5348a459ba881f9e3442e6850c3c1dc4f197845fae76273ab39dfe425d158293  ./src/Installer.php
-346d84be449065c094d00e58f677b40af16996b2fb1749861dfefdb8c2a673b8  ./src/Integration/BaseCredentials.php
+22a5c3df04f3c1cbf61b0b49e817958d186ad954123dcceef9672613d4acaf49  ./src/Integration/BaseCredentials.php
 4be46b561658217a68b9cedd38d223b2987cf9e59745f3a8422b401a6a8bf6da  ./src/Integration/BaseIntegration.php
 476cdaf7929441330b9db37a69fc39d0814027c64475759a9537caa56aa903ea  ./src/Integration/CallEvidence.php
 f02e19fb5da6c260fe127bf9044ec7f7f36f74228a57b400dd74f0f2d09b84ad  ./src/Plugin.php
@@ -35,7 +35,7 @@ f02e19fb5da6c260fe127bf9044ec7f7f36f74228a57b400dd74f0f2d09b84ad  ./src/Plugin.p
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./src/Support/index.php
 d46823da3d88a237ccd3e12cfdee718b1be1e5a131344eabc512534ee5890b78  ./src/Support/Logger.php
 ed87f946ff3be90bda23e7cf4d39127fbab0572c7d323a2b6ddd41f3fee2d235  ./src/Support/Phone.php
-2e1e96eb9c47dd697ec96589c637080c81203be0c5220d838e88959198730cc1  ./src/Support/Readiness.php
+8c97acdccd8b5b887cd6dde4bd3990a2b15f2e486dad34c9a04cfaeee923d106  ./src/Support/Readiness.php
 fa0af25b6ac1b9af5f974e8de10c4d62d62ac064d8b55b89924fbacda43c9862  ./src/Support/SharedBusinessContext.php
 42e43c2b05026a37142ca036f4a71ebde0673ba214890451a3110ca713b8b3a4  ./src/Support/TrackingNumberResolver.php
 17afd1710f01203d86a02c1b46a69f8adc3222bc9c8cdf1009c0f76214e39395  ./src/Support/WebhookEvents.php
@@ -53,7 +53,7 @@ ffa05e331721d3485567b5a5523e9ec9381e0404ec80ab821c821e74d6b75002  ./src/Webhook/
 dbbde9df61da04fe70330e346ac351620188b270477f1e1fa6255d0d0421aa0d  ./src/Webhook/TwilioVoiceController.php
 d33eaa17cd7b021865bae2aad59948d044e01f9ff2760354f011aebf5726836d  ./src/Webhook/TwilioWhisperController.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./templates/admin/index.php
-374114d609e29de9ba74fbda39c92e438938701c8e37b11adff7badc3cbffcb5  ./templates/admin/setup-status.php
+4451bb359d2ada7bec25b8a7e35692d39fa5ea1cf4e14726a9438bc86a5a6f4b  ./templates/admin/setup-status.php
 7136cba757c0106a5a9cf35e3be19e964a7fe495148ac3779c14ee17528decec  ./templates/admin/tracking-numbers.php
 bd48c24ce4500e60d2524571756787283f0d3fbfa50b116331309c09773f0cd1  ./templates/index.php
 b3f1d7f0ffd01b3911171622adf3e976be8956f640131f9aa4975d1f8e822bcb  ./uninstall.php

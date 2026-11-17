@@ -1,6 +1,6 @@
 # Call Bridge onboarding — one complete checklist
 
-CB0.2.1/DB1.1.0. Direct operation is independent of the optional Gateway0.1.0.
+CB0.2.3/DB1.1.0. Direct operation is independent of the optional Gateway0.1.0.
 No step below automatically buys a number,changes provider configuration or places
 a call. Public business phone,owned tracking number and forwarding destination
 are separate roles and are never synchronized automatically.
@@ -12,23 +12,30 @@ are separate roles and are never synchronized automatically.
    keys must not be regenerated over existing encrypted data. Preserve matched
    key/data backups under the host owner's custody. This is a one-time host step,
    not a secret manager provided by CB.
-2. **Required credential pair.** Open CB Setup & Status,then Open protected WP
-   credential entry. Find “Call Bridge — required Twilio Account SID and Webhook
-   Auth Token”,resource `default`. Use the SAME account/subaccount that owns the
-   dedicated number. Both inputs are masked and never prefilled. Stage the complete
-   pair,then activate the exact staged version. Staging does not replace active
-   credentials. Blank retains;partial,masked placeholders and invalid formats fail.
-   Replacement is explicit and atomically handled by Base. No provider authentication
-   is claimed by local validation. Never send these values in chat/screenshots/logs.
-3. **Existing external authority.** Nonempty SECB_TWILIO_ACCOUNT_SID or
-   SECB_TWILIO_AUTH_TOKEN makes the external pair authoritative. A partial pair fails
-   closed;CB never combines it with Base. Base rejects shadowed saves rather than
-   pretending newly entered values are in use. Existing valid external deployments
-   need no re-entry. To intentionally adopt Base,first arrange a backed-up maintenance
-   change removing BOTH external fields,then stage/activate a complete Base pair
-   before reopening traffic. CB neither imports nor edits the external file. Do not
-   change source/account during active calls. Base absence still permits external
-   configuration;it does not permit plaintext fallback storage.
+2. **Required credential pair — WP.** Open SiteEngine → Credentials → Call Bridge.
+   Enter **Twilio Account SID** and **Twilio Auth Token** from the SAME owning
+   account/subaccount, then **Save credentials**. The Auth Token is masked; both fields are blank
+   and write-only. Complete local validation and activation happen within Save;
+   there is no resource/version selection or separate activation step in ordinary
+   setup. Both blank retains the working pair. Partial, masked or invalid inputs
+   fail without replacing it. Local validation is not provider authentication.
+   For replacement, enter the complete pair. An Account SID change is an account
+   change: review the on-screen explanation before applying it. Existing numbers,
+   account ownership, media access and provider webhooks must match the new account;
+   CB does not change them. Never put either value in chat, Git or screenshots.
+   Optional playback API credentials are separate under **Advanced**.
+3. **Existing external authority — deliberate owner migration only.** Nonempty
+   SECB_TWILIO_ACCOUNT_SID or SECB_TWILIO_AUTH_TOKEN makes the external pair
+   authoritative. Partial pairs fail closed; Base fields are never mixed in.
+   A shadowed Save is rejected. Preserve working external installations without
+   re-entry. For an intentional source migration, the installation owner keeps a
+   private rollback backup, transfers the SAME complete pair through supported
+   Base commands in a controlled process, verifies activation/equality, then retires
+   both external overrides together and verifies fresh web-process resolution.
+   No request may observe an incomplete source. Preserve all unrelated external
+   settings and optional playback behavior. No automatic import or global authority
+   bypass is supplied. Alma's explicit migration is already complete; do not repeat
+   it. Base absence still supports external credentials, never plaintext WP storage.
 4. **Choose routing guidance.** Direct is the default and remains supported. Its
    exact site-derived inbound Voice address is POST `/wp-json/siteengine-call/v1/twilio/voice`.
    CB generates POST Dial/status,optional POST recording and GET recipient whispers.
@@ -72,23 +79,19 @@ are separate roles and are never synchronized automatically.
    account/token pair is the media fallback. Explicit complete invalid API material
    fails closed,not silently switched. Two-channel WAV is bounded to20MiB;legacy
    mono/oversized recordings are outside this proxy path. Define recording retention
-   and access policy explicitly. Keep recording off for the final basic-call check.
+   and access policy explicitly. Keep recording off unless a separate recording assignment authorizes it.
 9. **Interpret checks accurately.** Configured means material/settings exist.
    Automatically checked means local formats,authority,readability,extensions and
    table/version/GC presence were inspected. Provider ownership/authentication and
    real calling/attribution/recording require separate evidence. Missing required
    configuration prevents Configuration complete. Live verification is never inferred
    from a badge,200 response,source label or duration threshold.
-10. **One final operator test — only after separate authorization.** Reuse accepted
-   allocator,DNI,callback,recording and permission evidence where bytes are unchanged.
-   Once real account/number and approved provider routing are configured,one eligible
-   synthetic-campaign visit plus ONE two-participant inbound call can verify the
-   newly selected credential source with real provider requests and its reservation.
-   Suggested bound:65–75sec after answer,max90sec,$1operatorbudget,recording OFF.
-   Check visible DNI,notice/whisper as applicable,forwarding/two-way audio,canonical
-   call/session evidence,terminal duration/technical qualification and restoration.
-   Do not repeat already accepted recording tests. No such call/provider change is
-   performed or authorized by the onboarding implementation assignment.
+10. **Reuse acceptance evidence.** Configuration, synthetic storage and signature
+   checks do not prove provider authentication. For this Alma onboarding update,
+   reuse accepted routing/DNI/callback/recording evidence where bytes are unchanged;
+   no new operator call or recording session is needed. A new client deployment's
+   approved account/number, webhook/cached-page verification and any bounded operator
+   call belong to that deployment assignment, not this Save workflow.
 
 ## Errors and safe recovery
 
@@ -96,14 +99,15 @@ are separate roles and are never synchronized automatically.
   Base fallback/shadowed saves are blocked. Do not re-enter into an ignored source.
 - **Base key unavailable:** host owner checks/provisions the existing key mechanism.
   Never regenerate a lost key to “repair” encrypted records.
-- **Storage unavailable:** initialize/check Base tables through its protected action
-  after host key readiness. CB getters do not create Base schema.
+- **Storage unavailable:** the host owner checks Base storage and matching key
+  readiness through Base’s supported host route. This is not an ordinary credential
+  entry step. CB getters do not create Base schema.
 - **Integrity failure:** stop replacement and reconcile installation/key/data with
   Base's owner. No secret/error body is reflected by CB.
-- **Failed save:** check complete formats,resource `default`,capability/nonce and
-  current revision. Reload/reconcile uncertain commits;do not blindly replay saves.
-- **Staged but not configured:** activate the exact staged version. Active material
-  remains authoritative until activation;local acceptance is not provider validation.
+- **Failed save:** follow the local validation, account-change or host-readiness message.
+  Supply the complete matching pair; both blank retains it. Reload/reconcile an
+  uncertain result before retrying. Do not expose secrets to diagnose a failure.
+  Ordinary Save includes activation; local acceptance is not provider validation.
 - **Central selected but unavailable:** correct registry/receiver/account/storage,
   or select Direct. Do not treat an unprovisioned gateway as required for direct use.
 

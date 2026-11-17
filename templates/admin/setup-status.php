@@ -13,18 +13,18 @@ $embedded = $embedded ?? false;
 <h2>1. Required credentials and authoritative source</h2>
 <p><strong><?php echo esc_html($onboarding['credentials']['source']); ?></strong> — <?php echo esc_html($onboarding['credentials']['local']); ?>.</p>
 <p><?php echo esc_html($onboarding['credentials']['action']); ?></p>
-<?php if($onboarding['base_available']): ?>
+<?php if($onboarding['base_available'] && \SiteEngine\CallBridge\Integration\BaseCredentials::simpleAvailable()): ?>
 <?php $credentialUrl = \SiteEngine\CallBridge\Integration\BaseCredentials::adminUrl(); if ($credentialUrl !== null): ?>
-<p><a class="button button-primary" href="<?php echo esc_url($credentialUrl); ?>">Open protected WP credential entry</a></p>
+<p><a class="button button-primary" href="<?php echo esc_url($credentialUrl); ?>">Open Call Bridge credentials</a></p>
 <?php else: ?><p>Protected credential entry is unavailable for this selection or administrator. Resolve Base availability and permissions first.</p><?php endif; ?>
-<ol><li>Find <strong>Call Bridge — required Twilio Account SID and Webhook Auth Token</strong>, resource <code>default</code>.</li>
-<li>Use the Account SID and Auth Token from the same account/subaccount that owns the dedicated number. Account SID is <code>AC</code> plus 32 hexadecimal characters; Auth Token is 32 hexadecimal characters. Both fields stay masked and are never prefilled.</li>
-<li>Stage the <strong>complete pair</strong>, then activate the exact staged version. Staging alone does not replace active credentials. Blank retains material; partial or masked placeholders are rejected. Local validation does not authenticate with Twilio.</li>
-<li>If a save fails, recheck the complete pair, resource <code>default</code> and this page’s authority/error. Reload after a revision conflict; do not repeatedly resubmit uncertain operations. Host-key/storage failures need Base’s supported provisioning/initialization, not new CB storage.</li></ol>
+<ol><li>Open <strong>SiteEngine → Credentials → Call Bridge</strong>.</li>
+<li>Use the Account SID and Auth Token from the same account/subaccount that owns the dedicated number. Account SID is <code>AC</code> plus 32 hexadecimal characters; Auth Token is 32 hexadecimal characters. The Auth Token is masked; both fields are write-only and never prefilled.</li>
+<li>Enter the <strong>complete matching pair</strong> and select <strong>Save credentials</strong>. Both blank retains the active pair; partial, masked or invalid input is rejected. A rejected save preserves working credentials. An unconfirmed result requires fresh status before retrying. Local validation does not authenticate with Twilio.</li>
+<li>If the Account SID changes, review the account-change explanation before applying it: the owning account, numbers and provider webhooks must match. CB never changes those provider settings. If a save fails, follow its error and reload before retrying an uncertain operation. Host-key/storage failures belong to the host owner.</li></ol>
 <?php endif; ?>
 <p><strong>Optional playback API credentials:</strong> <?php echo esc_html($onboarding['playback']['source'].' — '.$onboarding['playback']['local']); ?>.
-They are a separate protected <strong>Call Bridge — optional Twilio playback API key</strong> set. They must belong to the owning account; API keys cannot validate webhook signatures. When absent, playback uses the required Account SID/Auth Token. They are not required while recording is disabled.</p>
-<p>External nonempty fields take precedence as one complete pair. A partial external pair blocks Base fallback. CB neither imports nor overwrites that file. Explicit migration requires a backed-up maintenance change removing both external fields before staging/activating Base material; do not change sources during active calls.</p>
+Find these separately under <strong>Advanced</strong> in Call Bridge credentials. They must belong to the owning account; API keys cannot validate webhook signatures. When absent, playback uses the required Account SID/Auth Token. They are not required while recording is disabled.</p>
+<p>External nonempty fields take precedence as one complete pair. A partial external pair blocks Base fallback. CB neither imports nor overwrites that file. A deliberate source migration requires a private backup, complete Base activation and verified cutover of both external overrides together. Do not change sources during active calls.</p>
 <h2>2. Routing mode and exact addresses</h2>
 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
 <input type="hidden" name="action" value="secb_onboarding_mode">

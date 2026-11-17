@@ -3,7 +3,9 @@
 define('ABSPATH', __DIR__.'/fixture/');
 class WP_Error {}
 function is_wp_error($v) { return $v instanceof WP_Error; }
+function __($s,$d='') { return $s; }
 function siteengine_credentials_contract_version() { return 'credentials-1'; }
+function siteengine_credentials_simple_save_contract_version() { return $GLOBALS['simple_contract']??'simple-save-1'; }
 function siteengine_register_credentials_v1(...$args) { return true; }
 function siteengine_credentials_runtime_read_v1(...$args) { return null; }
 function siteengine_credentials_metadata_v1(...$args) { return null; }
@@ -23,4 +25,5 @@ check(str_contains($class::adminUrl('playback'),'credential=twilio-playback'));
 $mode='error';check($class::adminUrl()===null);
 $mode='throw';check($class::adminUrl()===null);
 check($class::adminUrl('unknown')===null);
+$GLOBALS['simple_contract']='unsupported';check($class::adminUrl()===null);
 echo "$count PASS; mocked helper boundary, no web/SQL execution\n";

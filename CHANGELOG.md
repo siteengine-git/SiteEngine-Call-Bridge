@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 - 2026-11-17 (ordinary credential onboarding review candidate)
+
+- Use Base’s opt-in atomic Save for the complete required Twilio pair; ordinary setup hides resource/version/stage controls.
+- Label both masked fields, explain account changes and put optional playback under Advanced. Keep external authority, write-only storage and failure/uncertainty boundaries.
+- Complete one setup checklist; preserve direct routing and separate provider/central-hosting/integration milestones. No schema or calling behavior change.
+
+
 ## 0.2.2 - 2026-11-17 (Base credential navigation review candidate)
 
 - Open the exact protected CB credential group through Base 2.5.0's supported helper; handle unavailable/unauthorized links without rendering errors.
