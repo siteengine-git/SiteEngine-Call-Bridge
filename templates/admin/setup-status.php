@@ -14,7 +14,9 @@ $embedded = $embedded ?? false;
 <p><strong><?php echo esc_html($onboarding['credentials']['source']); ?></strong> — <?php echo esc_html($onboarding['credentials']['local']); ?>.</p>
 <p><?php echo esc_html($onboarding['credentials']['action']); ?></p>
 <?php if($onboarding['base_available']): ?>
-<p><a class="button button-primary" href="<?php echo esc_url(admin_url('admin.php?page=siteengine-credentials&resource=default')); ?>">Open protected WP credential entry</a></p>
+<?php $credentialUrl = \SiteEngine\CallBridge\Integration\BaseCredentials::adminUrl(); if ($credentialUrl !== null): ?>
+<p><a class="button button-primary" href="<?php echo esc_url($credentialUrl); ?>">Open protected WP credential entry</a></p>
+<?php else: ?><p>Protected credential entry is unavailable for this selection or administrator. Resolve Base availability and permissions first.</p><?php endif; ?>
 <ol><li>Find <strong>Call Bridge — required Twilio Account SID and Webhook Auth Token</strong>, resource <code>default</code>.</li>
 <li>Use the Account SID and Auth Token from the same account/subaccount that owns the dedicated number. Account SID is <code>AC</code> plus 32 hexadecimal characters; Auth Token is 32 hexadecimal characters. Both fields stay masked and are never prefilled.</li>
 <li>Stage the <strong>complete pair</strong>, then activate the exact staged version. Staging alone does not replace active credentials. Blank retains material; partial or masked placeholders are rejected. Local validation does not authenticate with Twilio.</li>

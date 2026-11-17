@@ -7,6 +7,17 @@ final class BaseCredentials
 {
     private static bool $registered = false;
     private static bool $registrationFailed = false;
+    /** Base 2.5 group links; never cast WP_Error into a URL. */
+    public static function adminUrl(string $kind = 'webhook'): ?string
+    {
+        if (!in_array($kind, ['webhook','playback'], true) || !self::available()) return null;
+        self::register();
+        if (self::$registrationFailed) return null;
+        if (!function_exists('siteengine_credentials_admin_url_v1')) return admin_url('admin.php?page=siteengine-credentials&resource=default');
+        try { $url = siteengine_credentials_admin_url_v1('call-bridge', 'twilio-'.$kind, 'default'); }
+        catch (\Throwable $e) { return null; }
+        return !is_wp_error($url) && is_string($url) && $url !== '' ? $url : null;
+    }
     public static function available(): bool
     {
         return function_exists('siteengine_credentials_contract_version')

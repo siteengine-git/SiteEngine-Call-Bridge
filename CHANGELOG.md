@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 - 2026-11-17 (Base credential navigation review candidate)
+
+- Open the exact protected CB credential group through Base 2.5.0's supported helper; handle unavailable/unauthorized links without rendering errors.
+- No resolver, provider, callback, schema or recording behavior change. Base 2.5.0 remains an unreleased dependency.
+
+
 ## 0.2.1 - 2026-11-16 (protected onboarding review candidate)
 
 - Register required Twilio pair and separate optional playback API pair through Base credentials-1; use its native protected write-only staging/activation UI and runtime reads. Preserve external authority and block shadowed saves or partial-field mixing.

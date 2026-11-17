@@ -1,4 +1,4 @@
-# Call Bridge 0.2.1 — protected WP onboarding review candidate
+# Call Bridge 0.2.2 — protected WP onboarding review candidate
 
 Uses the existing Base credentials-1 protected entry for complete Twilio pairs, with explicit external authority and no silent shadowed saves. Setup includes routing guidance and a complete onboarding checklist. See ONBOARDING.md. DB remains 1.1.0; central Gateway0.1.0 remains separate and direct routing remains usable. Stable delivery is unchanged.
 
