@@ -1,0 +1,26 @@
+PASS four endpoints from the unchanged URL generator
+PASS exact selectable URL text 0
+PASS exact method 0
+PASS named keyboard-focusable URL region 0
+PASS exact selectable URL text 1
+PASS exact method 1
+PASS named keyboard-focusable URL region 1
+PASS exact selectable URL text 2
+PASS exact method 2
+PASS named keyboard-focusable URL region 2
+PASS exact selectable URL text 3
+PASS exact method 3
+PASS named keyboard-focusable URL region 3
+PASS no editors, action controls or scripts introduced
+PASS previous candidate URL table available for comparison
+PASS previous candidate displayed URL unchanged 0
+PASS previous candidate displayed URL unchanged 1
+PASS previous candidate displayed URL unchanged 2
+PASS previous candidate displayed URL unchanged 3
+PASS all navigation labels and destinations unchanged
+PASS endpoint fields remain escaped text
+PASS URL escaping preserves literal displayed text
+PASS accessible label escapes attribute payload
+PASS unusable URL fallback unchanged
+PASS template still denies non-administrator rendering in isolation
+RESULT: 25 PASS; local rendering only, not installed acceptance.

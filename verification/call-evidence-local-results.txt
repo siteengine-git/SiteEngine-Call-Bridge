@@ -1,0 +1,68 @@
+PASS one labelled synthetic call persisted through shipped repository
+PASS canonical identity preserved without inquiry alias
+PASS missing duration explicit, never fabricated zero
+PASS persisted zero distinct from unavailable
+PASS fresh read preserves database bytes and evidence without option writes
+PASS single allow-listed call SELECT, no media/raw caller or live attribution lookup
+PASS actual status controller persists terminal qualification in SQLite
+PASS callback leaves original acquisition and number assignment intact
+PASS callback-completed preserves accepted evidence and unique identity
+PASS callback-ringing preserves accepted evidence and unique identity
+PASS callback-busy preserves accepted evidence and unique identity
+PASS current source/pool/deactivation cannot reconstruct or relabel original evidence
+PASS evidence survives fresh independent PHP processes
+PASS unsnapshotted lease_id unavailable
+PASS unsnapshotted pool_group unavailable
+PASS unsnapshotted leased_at unavailable
+PASS unsnapshotted expires_at unavailable
+PASS business_qualification explicitly unavailable
+PASS advertising_eligibility explicitly unavailable
+PASS inquiry_identity explicitly unavailable
+PASS authoritative_consent_linkage explicitly unavailable
+PASS durable_child_leg_mapping explicitly unavailable
+PASS no fabricated consent or advertising click identity
+PASS notes, fixture token and media interface absent
+PASS form identity rejected before SQL
+PASS missing call distinguished from storage failure
+PASS injected read failure fails closed without diagnostics disclosure
+PASS persisted identity mismatch rejected, never repaired or aliased
+{
+    "demonstration": "SYNTHETIC LOCAL SQLITE ONLY",
+    "contract": "siteengine.call-evidence.v1",
+    "identity": "twilio:CA00000000000000000000000000000001",
+    "acquisition": {
+        "matched_session_id": "synthetic-original-session",
+        "gclid": null,
+        "gbraid": null,
+        "wbraid": null,
+        "fbclid": null,
+        "msclkid": null,
+        "utm_source": "synthetic-original-acquisition",
+        "utm_medium": null,
+        "utm_campaign": "CB-EVIDENCE-SYNTHETIC-20261106",
+        "utm_term": null,
+        "utm_content": null,
+        "landing_page": "https:\/\/fixture.invalid\/original"
+    },
+    "number_assignment": {
+        "tracking_number_id": 1,
+        "tracking_number": "+10000000081",
+        "forwarded_to": "+10000000089",
+        "source": "synthetic-original-source",
+        "lease_id": null,
+        "pool_group": null,
+        "leased_at": null,
+        "expires_at": null
+    },
+    "outcome": {
+        "status": "completed",
+        "duration_sec": 90,
+        "technical_qualification": "qualified",
+        "qualification_threshold_sec": null,
+        "is_repeat_caller": 0,
+        "prior_qualifying_calls": 0
+    },
+    "business_qualification": null,
+    "advertising_eligibility": null
+}
+28 PASS / 0 FAIL; SQLite persistence + WP adapter; no MariaDB/installed HTTP/AB integration

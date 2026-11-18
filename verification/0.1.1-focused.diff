@@ -1,0 +1,378 @@
+diff --git a/readme-tabs/call-bridge.php b/readme-tabs/call-bridge.php
+new file mode 100644
+index 0000000..7ec177a
+--- /dev/null
++++ b/readme-tabs/call-bridge.php
+@@ -0,0 +1,46 @@
++<?php
++/**
++ * Tab Title: Call Bridge
++ * Tab Order: 40
++ */
++defined('ABSPATH') || exit;
++if(!current_user_can('manage_options'))return;
++?>
++<h2>Call Bridge operations guide</h2>
++<p>Call Bridge handles Twilio calls, dynamic number insertion (DNI), exclusive leases, attribution and internal duration/outcome qualification. Configuration completeness never proves calling acceptance.</p>
++<p><a href="<?php echo esc_url(admin_url('admin.php?page=secb-settings')); ?>">Setup &amp; Status</a> · <a href="<?php echo esc_url(admin_url('admin.php?page=secb-numbers')); ?>">Tracking Numbers</a> · <a href="<?php echo esc_url(admin_url('admin.php?page=secb-calls')); ?>">Call Log</a></p>
++<h3>Prerequisites and secure provisioning</h3>
++<p>Use WordPress 6.4+, PHP 8.1+, database access and required extensions including mysqli, mbstring, JSON, hash and OpenSSL. Verify web PHP separately from CLI PHP. Base is optional: it supplies shared facts/navigation and this tab; CB retains standalone pages without it. Webhooks need reachable HTTPS, correct proxy reconstruction and an owned Voice-capable Twilio number.</p>
++<p>Have the administrator preserve the existing external configuration outside the web root and replaceable plugin directory. Define <code>SECB_CONFIG_FILE</code> before plugin loading and use secret-file permissions readable by the actual web owner. Never copy another site's secrets or place them in wp_options, JavaScript, Git, tickets or screenshots. This UI neither edits nor displays credentials.</p>
++<p>Account SID identifies the account. Auth Token authenticates incoming signatures. Optional API Key SID/Secret is preferred for media retrieval; Account SID/Auth Token is the playback fallback. API keys cannot replace the webhook Auth Token. Leave optional media credentials absent while recording is off. Nonempty placeholders are not valid configuration; presence checks do not validate credentials or contact Twilio.</p>
++<h3>Public phone, forwarding destination and tracking number</h3>
++<p>The public business phone is the ordinary advertised contact. Each CB row's <code>forward_to</code> is the recipient destination. A tracking number is an owned Twilio number temporarily displayed to an attributed visitor. These three roles are not interchangeable. Base's legacy Forwarding / Tracking Phone field is an unconfirmed reference, not routing authority. No automatic synchronization occurs.</p>
++<p>Choose dedicated numbers and approved recipients before registration. Obtain/purchase numbers in Twilio only with separate operator authorization. A CB row neither purchases numbers nor updates provider webhooks. Preserve source/pool, forwarding, thresholds, active flags, recording flags, notices and whispers. Do not repoint a live client's number for diagnostics.</p>
++<h3>Twilio webhooks and staged verification</h3>
++<p>Use the exact site-derived URLs on Setup &amp; Status. Inbound Voice uses POST. CB generates the POST Dial status action, optional POST recording callback and signed GET whisper query in TwiML. Do not substitute health for Voice or manually configure a static whisper message URL.</p>
++<p>After approved provider setup, test signatures against the exact public URL, URI/query and form body. <code>SECB_WEBHOOK_BASE_URL</code> must agree with what Twilio signs through the proxy. Verify HTTPS/certificate trust, redirects, subdirectory sites and public connectivity. Do not disable validation to obtain a pass. Signed fixtures and a real authorized call are separate evidence.</p>
++<h3>DNI eligibility and attribution</h3>
++<p>DNI starts when supported click/UTM attribution or stored context exists. Capture includes GCLID, GBRAID, WBRAID, FBCLID, MSCLKID and UTM fields. Browser context uses <code>secb_attribution</code> in localStorage. Test unavailable/malformed storage and network failure. A mutable session is not an immutable attribution history.</p>
++<p>Ordinary tel links swap only when their original number matches an active tracking row's forwarding destination. Explicit opt-ins are <code>[data-se-phone]</code>, <code>[data-se-call-tracking]</code> and <code>.se-tracking-number</code>. Unrelated numbers and non-phone labels must remain unchanged. Test actual blocks/theme, late-added nodes and navigation. Do not change the site's global contact phone to test DNI.</p>
++<h3>Exclusive leases, pool sizing and exhaustion</h3>
++<p>Lease defaults to 30 minutes (5–240); attribution retention defaults to 90 days (1–365). Long attribution retention is not a long exclusive lease. The browser renews near half the lease duration; failed renewal restores original contact details rather than trusting a cached tracking number.</p>
++<p>For a source, CB selects the largest configured pool group. Ungrouped numbers each form a standalone one-number group; standalone numbers are not silently merged. Size that chosen pool for simultaneous attributed visitors throughout the lease window. Test independent database connections and browsers. Exhaustion fails closed: no shared busy number or guessed attribution, and ordinary contact details stay visible. Configuration checks do not prove concurrency safety.</p>
++<h3>Whispers, repeat callers and duration qualification</h3>
++<p>New/repeat whispers are recipient messages before bridging, not CRM campaigns. Repeat detection considers prior completed calls meeting the minimum duration within the row's repeat window. Repeat is metadata: returning callers are not suppressed for life or automatically marked Won/Lost.</p>
++<p>Completed calls meeting the duration threshold are internally qualified; short completed calls and other outcomes differ. Duration qualification does not prove business qualification, consent or a won job. Test threshold edges, busy/no-answer, retries, reordered callbacks and parent/child-leg correlation. Canonical identity remains <code>twilio:{CallSid}</code>.</p>
++<h3>Recording defaults, approved notices and secured playback</h3>
++<p>Recording defaults off per number. Enabling it requires approved notice language, participants/policy and separate authorization. When enabled, the notice precedes dual-channel recording from answer. Passthrough bypasses normal attribution/logging but does not turn recording off; it is not a no-recording diagnostic switch.</p>
++<p>Playback is intended for logged-in administrators with manage_options, using server-side credentials. Actual browser cookie/REST nonce behavior, the Call Log Play link, denied access, upstream URL/redirect trust and caching require separate acceptance. Never expose authorization headers or stored recording URLs, retrieve existing media as fixtures, or weaken access controls to get playback working. This guide fetches no media.</p>
++<h3>Diagnostics and interpreting status</h3>
++<p>Configuration needed means required information or a local prerequisite is missing. Off is valid for optional recording/debug features. Configuration complete is only a local presence check: live calling, attribution and playback remain pending. Number ownership, credential validity, valid signatures and delivery cannot be inferred from a configured row or badge.</p>
++<p>CLI commands include <code>wp se-call doctor</code>, <code>wp se-call webhook-status</code> and targeted <code>wp se-call inspect-call</code>. inspect-call still exposes operational fields; do not share raw output. Latest-event timestamps are not a durable retry journal. Health's <code>ok:true</code> is not acceptance; inspect individual fields and share only redacted evidence.</p>
++<p>WordPress bootstrap may create/update tables, save the DB version and schedule missing GC. Nominal doctor/health probes can inherit those writes. GET <code>/track/number</code> expires leases; session/callback requests also write state. Obtain appropriate authorization. The Setup &amp; Status and Help renderers themselves do not perform those operations.</p>
++<h3>Caching, proxy and failure troubleshooting</h3>
++<p>For absent swaps, check attribution eligibility, source/selected pool, active numbers, forward-number matching, storage and network failures. Check page-cache/minification behavior and late DOM content. Preserve unrelated tel links and verify safe restoration under exhaustion.</p>
++<p>For signature failures, compare approved public base, method, URI/query and form parameters through the actual proxy. Never print tokens or signature headers. For forwarding issues, verify the owned number and approved row destination. Fail-safe can preserve a resolved destination after some tracking/logging errors; it cannot guarantee delivery before number resolution. Never break a shared database as a test.</p>
++<h3>Maintenance, retention, upgrades and uninstall</h3>
++<p>Hourly <code>se_cb_gc</code> expires stale active leases and purges expired attribution sessions, not calls or recordings. Define their retention separately. Deactivation clears CB's GC hook. Activation/ordinary boot may install/upgrade tables and schedule GC. Check physical schema as well as the saved version after authorized upgrades.</p>
++<p>Preserve packages, external config, per-number settings and useful data before upgrades; test in isolation. Uninstall preserves CB tables by default. <code>SECB_ALLOW_UNINSTALL_DROP=true</code> explicitly permits destructive removal; never enable it for routine upgrades/diagnostics. Roll back only assigned files/fixtures, not unrelated plugins, cron hooks or the whole database.</p>
++<h3>Acceptance checklist and current limits</h3>
++<p>Record distinct evidence for package/configuration, SQL lease concurrency, browser DNI, valid/invalid signed callbacks, approved live forwarding/whispers/outcomes and secured playback. Use dedicated approved numbers/recipients. A skipped stage stays pending; this UI cannot mark calling accepted.</p>
++<p>No authoritative browser consent linkage exists: receipt columns and voice-copy logic do not establish browser → receipt → call authority. There is no CRM inquiry integration, call export, SMS workflow or provider picker. Twilio is the only provider. Consent/CRM/advertising interfaces need separate reviewed contracts. Configuration and duration checks do not establish legal or advertising compliance.</p>
+diff --git a/siteengine-call-bridge.php b/siteengine-call-bridge.php
+index ab444fb..d2fd66c 100644
+--- a/siteengine-call-bridge.php
++++ b/siteengine-call-bridge.php
+@@ -6 +6 @@
+- * Version:           0.1.0
++ * Version:           0.1.1
+@@ -19 +19 @@ defined('ABSPATH') || exit;
+-define('SECB_VERSION', '0.1.0');
++define('SECB_VERSION', '0.1.1');
+diff --git a/src/Admin/Menu.php b/src/Admin/Menu.php
+index 65453d8..0a5f2d7 100644
+--- a/src/Admin/Menu.php
++++ b/src/Admin/Menu.php
+@@ -3,0 +4 @@ namespace SiteEngine\CallBridge\Admin;
++use SiteEngine\CallBridge\Integration\BaseIntegration;
+@@ -7,2 +8,10 @@ final class Menu
+-    public const CAP='manage_options'; public const SLUG_NUMBERS='secb-numbers'; public const SLUG_CALLS='secb-calls'; public const SLUG_SETTINGS='secb-settings';
+-    public function register(): void { add_action('admin_menu',[$this,'addMenu']); add_action('admin_post_secb_save_number',[TrackingNumbersPage::class,'handleSave']); add_action('admin_post_secb_delete_number',[TrackingNumbersPage::class,'handleDelete']); }
++    public const CAP='manage_options';
++    public const SLUG_NUMBERS='secb-numbers';
++    public const SLUG_CALLS='secb-calls';
++    public const SLUG_SETTINGS='secb-settings';
++    public function register(): void
++    {
++        add_action('admin_menu',[$this,'addMenu'],120);
++        add_action('admin_post_secb_save_number',[TrackingNumbersPage::class,'handleSave']);
++        add_action('admin_post_secb_delete_number',[TrackingNumbersPage::class,'handleDelete']);
++    }
+@@ -10,0 +20,6 @@ final class Menu
++        if(BaseIntegration::available()){
++            add_submenu_page('siteengine-options','Call Bridge Tracking Numbers','Call Bridge — Numbers',self::CAP,self::SLUG_NUMBERS,[TrackingNumbersPage::class,'render']);
++            add_submenu_page('siteengine-options','Call Bridge Call Log','Call Bridge — Call Log',self::CAP,self::SLUG_CALLS,[CallLogPage::class,'render']);
++            // Base alone registers secb-settings through the module filter.
++            return;
++        }
+@@ -14 +29 @@ final class Menu
+-        add_submenu_page(self::SLUG_NUMBERS,'Settings','Settings',self::CAP,self::SLUG_SETTINGS,[SettingsPage::class,'render']);
++        add_submenu_page(self::SLUG_NUMBERS,'Setup & Status','Setup & Status',self::CAP,self::SLUG_SETTINGS,[SettingsPage::class,'render']);
+diff --git a/src/Admin/SettingsPage.php b/src/Admin/SettingsPage.php
+index 8d6a756..b16181b 100644
+--- a/src/Admin/SettingsPage.php
++++ b/src/Admin/SettingsPage.php
+@@ -4 +4,3 @@ namespace SiteEngine\CallBridge\Admin;
+-use SiteEngine\CallBridge\Support\Config;
++use SiteEngine\CallBridge\Integration\BaseIntegration;
++use SiteEngine\CallBridge\Support\Readiness;
++use SiteEngine\CallBridge\Support\SharedBusinessContext;
+@@ -10,8 +12,10 @@ final class SettingsPage
+-        if(!current_user_can(Menu::CAP))wp_die('Insufficient permissions.');$base=Config::webhookBaseUrl().'/wp-json/'.SECB_REST_NAMESPACE;
+-        $items=['SECB_TWILIO_ACCOUNT_SID'=>Config::twilioAccountSid()!==null,'SECB_TWILIO_AUTH_TOKEN'=>Config::twilioAuthToken()!==null,'Recording credentials'=>Config::recordingCredentials()!==null,'SECB_WEBHOOK_BASE_URL'=>defined('SECB_WEBHOOK_BASE_URL'),'SECB_DEBUG_LOG'=>Config::debugLog(),'SECB_PASSTHROUGH_MODE'=>Config::passthroughMode()];
+-        ?>
+-        <div class="wrap"><h1>SiteEngine Call Bridge — Settings</h1>
+-        <h2>Twilio Webhook URLs</h2><table class="form-table"><tr><th>Voice</th><td><code><?php echo esc_html($base.'/twilio/voice'); ?></code> — POST</td></tr><tr><th>Status</th><td><code><?php echo esc_html($base.'/twilio/status'); ?></code> — set automatically by &lt;Dial&gt;</td></tr><tr><th>Recording</th><td><code><?php echo esc_html($base.'/twilio/recording'); ?></code></td></tr><tr><th>Health</th><td><code><?php echo esc_html($base.'/health'); ?></code></td></tr></table>
+-        <h2>Configuration</h2><table class="form-table"><?php foreach($items as $name=>$ok): ?><tr><th><code><?php echo esc_html($name); ?></code></th><td><?php echo $ok?'<span style="color:#3a3">● Ready</span>':'<span style="color:#a33">○ Not configured</span>'; ?></td></tr><?php endforeach; ?><tr><th>Number lease</th><td><?php echo (int)Config::leaseMinutes(); ?> minutes</td></tr><tr><th>Attribution retention</th><td><?php echo (int)Config::sessionTtlDays(); ?> days</td></tr></table>
+-        <p><strong>Call Bridge 0.1.0 intentionally contains no Fluent Forms, FluentCRM lifecycle, Won/Lost, Google Sheets, or Google Ads export code.</strong></p></div>
+-        <?php
++        if(!current_user_can(Menu::CAP)){wp_die('Insufficient permissions.');return;}
++        $helpUrl=BaseIntegration::helpUrl();
++        if(isset($_GET['view'])&&sanitize_key((string)wp_unslash($_GET['view']))==='help'){
++            echo '<div class="wrap"><h1>Call Bridge Help &amp; Reference</h1>';
++            include SECB_PATH.'readme-tabs/call-bridge.php';
++            echo '</div>';return;
++        }
++        $readiness=Readiness::current();$business=SharedBusinessContext::read();
++        $webhooks=Readiness::webhookUrls();
++        include SECB_PATH.'templates/admin/setup-status.php';
+diff --git a/src/Integration/BaseIntegration.php b/src/Integration/BaseIntegration.php
+new file mode 100644
+index 0000000..3b13fa1
+--- /dev/null
++++ b/src/Integration/BaseIntegration.php
+@@ -0,0 +1,52 @@
++<?php
++declare(strict_types=1);
++namespace SiteEngine\CallBridge\Integration;
++use SiteEngine\CallBridge\Admin\Menu;
++use SiteEngine\CallBridge\Admin\SettingsPage;
++use SiteEngine\CallBridge\Support\Readiness;
++defined('ABSPATH') || exit;
++final class BaseIntegration
++{
++    public static function available(): bool
++    {
++        return class_exists('SiteEngine_Base_Module_Registry') && class_exists('SiteEngine_Base_Admin') && class_exists('SiteEngine_Base_Readme_Page');
++    }
++    public static function register(): void
++    {
++        add_filter('siteengine_modules', [self::class, 'modules']);
++        add_filter('siteengine_readme_tab_dirs', [self::class, 'helpDirectories']);
++    }
++    public static function modules($modules): array
++    {
++        $modules = is_array($modules) ? $modules : [];
++        $modules['call-bridge'] = [
++            'title'=>'Call Bridge', 'menu_title'=>'Call Bridge', 'page_slug'=>Menu::SLUG_SETTINGS,
++            'capability'=>Menu::CAP, 'order'=>40, 'render'=>[SettingsPage::class,'render'],
++            'status_callback'=>[self::class,'status'], 'requirements'=>[], 'notice'=>false,
++            'description'=>'Twilio call tracking, setup guidance and configuration status.',
++        ];
++        return $modules;
++    }
++    public static function status(): array
++    {
++        if (!current_user_can(Menu::CAP)) {
++            return ['status'=>'warning','label'=>'Administrator access required','message'=>'Open with an administrator account.'];
++        }
++        // Original Base routes setup_required to Business Data. Its supported
++        // warning/Open path preserves the CB destination without a Base patch.
++        return ['status'=>'warning','label'=>Readiness::current()['label'],
++            'message'=>'Open Call Bridge to review setup. Live calling, attribution and playback acceptance remain pending.'];
++    }
++    public static function helpDirectories($directories): array
++    {
++        $directories = is_array($directories) ? $directories : [];
++        $own = SECB_PATH . 'readme-tabs/';
++        if (!in_array($own, $directories, true)) $directories[] = $own;
++        return $directories;
++    }
++    public static function helpUrl(): string
++    {
++        return self::available() ? admin_url('admin.php?page=read-me-file&tab=call-bridge')
++            : admin_url('admin.php?page='.Menu::SLUG_SETTINGS.'&view=help');
++    }
++}
+diff --git a/src/Plugin.php b/src/Plugin.php
+index 68bc2ba..1798b8c 100644
+--- a/src/Plugin.php
++++ b/src/Plugin.php
+@@ -38,0 +39 @@ final class Plugin
++        \SiteEngine\CallBridge\Integration\BaseIntegration::register();
+diff --git a/src/Support/Readiness.php b/src/Support/Readiness.php
+new file mode 100644
+index 0000000..74b27ce
+--- /dev/null
++++ b/src/Support/Readiness.php
+@@ -0,0 +1,104 @@
++<?php
++declare(strict_types=1);
++namespace SiteEngine\CallBridge\Support;
++defined('ABSPATH') || exit;
++/** Booleans/aggregate reads only. No installer, lease lookup, writes or HTTP. */
++final class Readiness
++{
++    private static ?array $cached=null;
++    public static function current(): array
++    {
++        return self::$cached ??= self::evaluate(self::inspect());
++    }
++    public static function inspect(): array
++    {
++        global $wpdb;
++        $f=[
++            'external'=>!defined('SECB_CONFIG_FILE')?'not_defined':
++                (is_string(SECB_CONFIG_FILE)&&SECB_CONFIG_FILE!==''&&is_readable(SECB_CONFIG_FILE)?'readable':'unreadable'),
++            'account'=>Config::twilioAccountSid()!==null, 'token'=>Config::twilioAuthToken()!==null,
++            'playback'=>(Config::twilioApiKeySid()!==null&&Config::twilioApiKeySecret()!==null)
++                ||(Config::twilioAccountSid()!==null&&Config::twilioAuthToken()!==null),
++            'url'=>self::publicBaseUrl(), 'lease_minutes'=>Config::leaseMinutes(),
++            'session_days'=>Config::sessionTtlDays(), 'debug'=>Config::debugLog(),
++            'passthrough'=>Config::passthroughMode(), 'extensions'=>[], 'tables'=>[],
++            'numbers'=>null, 'db_current'=>false, 'gc'=>false, 'inspection_error'=>false,
++        ];
++        foreach (['mysqli','json','hash','mbstring','openssl'] as $name) $f['extensions'][$name]=extension_loaded($name);
++        try {
++            $f['db_current']=(string)get_option('se_cb_db_version','')===SECB_DB_VERSION;
++            $f['gc']=(bool)wp_next_scheduled('se_cb_gc');
++            foreach (['tracking_numbers','attribution_sessions','number_leases','calls'] as $suffix) {
++                $table=$wpdb->prefix.'se_cb_'.$suffix;
++                $f['tables'][$suffix]=$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s',$wpdb->esc_like($table)))===$table;
++            }
++            if ($f['tables']['tracking_numbers']) {
++                $table=$wpdb->prefix.'se_cb_tracking_numbers';
++                $row=$wpdb->get_row("SELECT COUNT(*) AS total,
++                    COALESCE(SUM(is_active=1),0) AS active,
++                    COALESCE(SUM(is_active=1 AND (TRIM(phone_number)='' OR TRIM(forward_to)='')),0) AS incomplete,
++                    COALESCE(SUM(is_active=1 AND record_calls<>0),0) AS recording FROM {$table}",ARRAY_A);
++                if (is_array($row)&&isset($row['total'],$row['active'],$row['incomplete'],$row['recording'])) {
++                    $f['numbers']=array_map('intval',$row);
++                } else $f['inspection_error']=true;
++            }
++        } catch (\Throwable $e) {
++            $f['inspection_error']=true; // Never expose raw database errors.
++        }
++        return $f;
++    }
++    /** Pure composition separates disabled options from missing prerequisites. */
++    public static function evaluate(array $f): array
++    {
++        $rows=[];$missing=[];
++        $add=static function(string $name,string $state,string $detail,bool $blocks=false) use (&$rows,&$missing):void {
++            $rows[]=['name'=>$name,'state'=>$state,'detail'=>$detail];
++            if($blocks)$missing[]=$name;
++        };
++        $add('External configuration',$f['external']==='readable'?'Configured':($f['external']==='unreadable'?'Needs attention':'Recommended'),
++            $f['external']==='readable'?'Referenced external file is readable':
++                ($f['external']==='unreadable'?'Ask the administrator to resolve the unreadable reference':'Existing inline constants still work; an external secrets file is recommended'),
++            $f['external']==='unreadable');
++        $add('Account SID',$f['account']?'Present, unverified':'Missing','Required account identity; values are never displayed',!$f['account']);
++        $add('Webhook Auth Token',$f['token']?'Present, unverified':'Missing','Required for signatures; API keys do not replace it',!$f['token']);
++        $add('Public webhook base',$f['url']!==''?'Configured, unverified':'Needs attention','Public HTTPS base without embedded credentials, query or fragment; verify the actual proxy URL',$f['url']==='');
++        $extensions=!in_array(false,$f['extensions'],true);
++        $add('PHP extensions',$extensions?'Present':'Missing',implode(', ',array_keys($f['extensions'])).'; current PHP runtime only',!$extensions);
++        $tables=count($f['tables'])===4&&!in_array(false,$f['tables'],true);
++        $add('Database',$tables&&$f['db_current']?'Tables/version present':'Needs attention','Existence/version only, not a full column/index validation; this page does not migrate',!$tables||!$f['db_current']);
++        $add('Garbage collection',$f['gc']?'Scheduled':'Missing','Hourly se_cb_gc registration only, not execution proof; this page does not schedule or run it',!$f['gc']);
++        $n=$f['numbers'];
++        $state=$n===null?'Not inspected':($n['total']===0?'No numbers configured':($n['active']===0?'All numbers inactive':($n['incomplete']>0?'Incomplete routing fields':'Active rows present')));
++        $add('Tracking numbers',$state,'Review each source/pool and forwarding destination. Presence does not prove ownership or delivery',$n===null||$n['active']===0||$n['incomplete']>0);
++        $recording=$n!==null&&$n['recording']>0;
++        $add('Recording',$n===null?'Not inspected':($recording?'Enabled on active number rows':'Off on active numbers'),'Defaults off per number; this page does not change flags/notices');
++        $add('Recording playback credentials',$n===null?'Not inspected':(!$recording?'Not required while recording is off':($f['playback']?'Present, unverified':'Missing')),
++            'Optional API Key SID/Secret preferred; Account SID/Auth Token fallback. Playback acceptance is separate',$recording&&!$f['playback']);
++        $add('Debug logging',$f['debug']?'On':'Off','Off is a deliberate value, not missing setup');
++        $add('Operating mode',$f['passthrough']?'Passthrough enabled':'Normal tracking','Passthrough bypasses normal attribution/logging, not per-number recording');
++        if($f['inspection_error'])$add('Inspection','Incomplete','Some reads failed; inspect diagnostics privately',true);
++        $complete=$missing===[];
++        return ['facts'=>$f,'rows'=>$rows,'missing'=>$missing,'configuration_complete'=>$complete,
++            'label'=>!$complete?'Configuration needed':($f['passthrough']?'Passthrough enabled; calling unverified':'Configuration complete; calling unverified'),
++            'acceptance'=>'Pending: live calling, attribution, signatures through the proxy and secured playback are not accepted by configuration checks.'];
++    }
++    public static function publicBaseUrl(): string
++    {
++        $url=Config::webhookBaseUrl();$p=parse_url($url);
++        if(!is_array($p)||($p['scheme']??'')!=='https'||empty($p['host'])
++            ||isset($p['user'])||isset($p['pass'])||isset($p['query'])||isset($p['fragment'])
++            ||!filter_var($url,FILTER_VALIDATE_URL))return '';
++        return $url;
++    }
++    public static function webhookUrls(): array
++    {
++        $base=self::publicBaseUrl();if($base==='')return [];
++        $root=$base.'/wp-json/'.SECB_REST_NAMESPACE;
++        return [
++            ['label'=>'Inbound Voice','method'=>'POST','url'=>$root.'/twilio/voice','use'=>'Configure the dedicated number only after provider-change approval'],
++            ['label'=>'Dial status','method'=>'POST','url'=>$root.'/twilio/status','use'=>'Generated in the Dial action'],
++            ['label'=>'Recording callback','method'=>'POST','url'=>$root.'/twilio/recording','use'=>'Generated for recording-enabled calls'],
++            ['label'=>'Recipient whisper','method'=>'GET','url'=>$root.'/twilio/whisper','use'=>'Generated with a signed query; do not configure a static message URL'],
++        ];
++    }
++}
+diff --git a/src/Support/SharedBusinessContext.php b/src/Support/SharedBusinessContext.php
+new file mode 100644
+index 0000000..3b0d781
+--- /dev/null
++++ b/src/Support/SharedBusinessContext.php
+@@ -0,0 +1,18 @@
++<?php
++declare(strict_types=1);
++namespace SiteEngine\CallBridge\Support;
++defined('ABSPATH') || exit;
++/** Reference facts only. Never synchronize these values into routing. */
++final class SharedBusinessContext
++{
++    public static function read(): array
++    {
++        $out=[];
++        foreach (['business_name','phone','forwarding_phone','privacy_policy_url'] as $key) {
++            $value=function_exists('siteengine_get') ? siteengine_get($key,'') : '';
++            $out[$key]=['value'=>is_string($value)?$value:'',
++                'stored'=>function_exists('siteengine_has') ? (bool)siteengine_has($key) : false];
++        }
++        return $out;
++    }
++}
+diff --git a/templates/admin/setup-status.php b/templates/admin/setup-status.php
+new file mode 100644
+index 0000000..3189546
+--- /dev/null
++++ b/templates/admin/setup-status.php
+@@ -0,0 +1,55 @@
++<?php
++defined('ABSPATH') || exit;
++if(!current_user_can(\SiteEngine\CallBridge\Admin\Menu::CAP))return;
++?>
++<div class="wrap">
++<h1>Call Bridge — Setup &amp; Status</h1>
++<p><strong><?php echo esc_html($readiness['label']); ?></strong></p>
++<p><?php echo esc_html($readiness['acceptance']); ?></p>
++<p><a class="button" href="<?php echo esc_url(admin_url('admin.php?page=secb-numbers')); ?>">Tracking Numbers</a>
++<a class="button" href="<?php echo esc_url(admin_url('admin.php?page=secb-calls')); ?>">Call Log</a>
++<a class="button" href="<?php echo esc_url($helpUrl); ?>">Help &amp; Reference</a></p>
++<p>This page is read-only. It does not save settings, provision numbers, change webhooks or place calls.</p>
++<h2>Configuration checklist</h2>
++<table class="widefat striped"><thead><tr><th scope="col">Check</th><th scope="col">State</th><th scope="col">Meaning / next step</th></tr></thead><tbody>
++<?php foreach($readiness['rows'] as $row): ?>
++<tr><th scope="row"><?php echo esc_html($row['name']); ?></th><td><?php echo esc_html($row['state']); ?></td><td><?php echo esc_html($row['detail']); ?></td></tr>
++<?php endforeach; ?>
++</tbody></table>
++<p>Lease: <?php echo (int)$readiness['facts']['lease_minutes']; ?> minutes. Attribution-session retention: <?php echo (int)$readiness['facts']['session_days']; ?> days. Neither is a complete call-data retention policy.</p>
++<h2>Business facts and three different phone roles</h2>
++<p>Shared facts are reference information. They are never copied into call routing automatically.</p>
++<dl>
++<dt><strong>Business name</strong></dt><dd><?php echo esc_html($business['business_name']['value'] ?: 'Not available from Base'); ?></dd>
++<dt><strong>Public business phone</strong></dt><dd><?php echo esc_html($business['phone']['value'] ?: 'Not available from Base'); ?> — the ordinary advertised contact, not an automatically chosen recipient.</dd>
++<dt><strong>Shared forwarding / tracking field</strong></dt><dd><?php echo esc_html($business['forwarding_phone']['value'] ?: 'Not available from Base'); ?> — unconfirmed reference only; its legacy label does not establish the intended recipient.</dd>
++<dt><strong>Per-number forwarding destination</strong></dt><dd>Each Tracking Numbers row's existing <code>forward_to</code> is authoritative. Choose an approved recipient explicitly.</dd>
++<dt><strong>Tracking numbers</strong></dt><dd>Owned Twilio numbers in CB's pools; different from the public phone and recipient destination.</dd>
++</dl>
++<?php if($business['privacy_policy_url']['value']!==''): ?>
++<p><a href="<?php echo esc_url($business['privacy_policy_url']['value']); ?>">Shared privacy policy reference</a> — this does not establish call or advertising consent.</p>
++<?php endif; ?>
++<?php if(function_exists('siteengine_get')): ?>
++<p><a href="<?php echo esc_url(admin_url('admin.php?page=business-data')); ?>">Review Business Data</a> for missing shared facts. Existing number settings remain unchanged.</p>
++<?php endif; ?>
++<h2>Set up Twilio</h2>
++<ol>
++<li><strong>Establish ownership.</strong> Use an approved account/subaccount and dedicated Voice-capable number. Confirm recipient, budget and test window. Obtain/purchase numbers in Twilio only under separate authorization; CB does not provision them.</li>
++<li><strong>Provision securely.</strong> Ask the administrator to preserve the existing <code>SECB_CONFIG_FILE</code> outside the web root and plugin folder, readable by the actual PHP owner. Define its reference before plugin loading. Do not paste secrets into this page, Git, screenshots or support messages.</li>
++<li><strong>Use the right credentials.</strong> <code>SECB_TWILIO_ACCOUNT_SID</code> identifies the account; <code>SECB_TWILIO_AUTH_TOKEN</code> validates incoming signatures. Optional <code>SECB_TWILIO_API_KEY_SID</code>/<code>SECB_TWILIO_API_KEY_SECRET</code> are preferred for later media playback; API keys do not replace the signature Auth Token. Nonempty example placeholders are not valid credentials. Presence checks do not contact Twilio.</li>
++<li><strong>Register numbers locally.</strong> In Tracking Numbers, enter the owned number, approved forwarding destination, source/pool, active flag and duration threshold. Preserve existing notices/whispers/settings. Keep recording off unless separately approved. A CB row does not configure Twilio.</li>
++<li><strong>Set the inbound webhook deliberately.</strong> After provider-change approval, use the exact Voice URL below with HTTP POST. CB generates status, optional recording and signed whisper callbacks in its TwiML. Match the actual public HTTPS URL/proxy; never bypass signatures to repair a mismatch.</li>
++<li><strong>Verify in stages.</strong> Configuration checks come first. Separately authorize SQL lease concurrency, browser DNI and signed callbacks, then live forwarding and secured playback. A credential-presence check or health 200 proves none of these.</li>
++</ol>
++<h3>URLs generated from this site's webhook base</h3>
++<?php if(!$webhooks): ?>
++<p>The base is not a usable public HTTPS URL. Ask the administrator to review it privately; an unsafe value is not displayed.</p>
++<?php else: ?>
++<table class="widefat striped"><thead><tr><th scope="col">Purpose</th><th scope="col">Method</th><th scope="col">URL</th><th scope="col">Use</th></tr></thead><tbody>
++<?php foreach($webhooks as $hook): ?>
++<tr><th scope="row"><?php echo esc_html($hook['label']); ?></th><td><?php echo esc_html($hook['method']); ?></td><td><code><?php echo esc_html($hook['url']); ?></code></td><td><?php echo esc_html($hook['use']); ?></td></tr>
++<?php endforeach; ?>
++</tbody></table>
++<?php endif; ?>
++<p>For pools, safe exhaustion/restore, diagnostic permissions and troubleshooting, read <a href="<?php echo esc_url($helpUrl); ?>">Call Bridge Help &amp; Reference</a>. Twilio is the only supported provider.</p>
++</div>

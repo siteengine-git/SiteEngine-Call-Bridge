@@ -1,0 +1,224 @@
+PASS candidate release and unchanged DB metadata
+PASS boot still invokes installer once (isolated adapter, not real migration)
+PASS actual plugin boot registers module before admin_menu
+PASS existing save/delete action hooks remain
+PASS module destination preserves settings slug
+PASS shared facts optional; page capability explicit
+PASS module filter preserves unrelated registrations
+PASS one submenu registration for secb-settings
+PASS correct parent for secb-settings
+PASS working guarded renderer for secb-settings
+PASS one submenu registration for secb-numbers
+PASS correct parent for secb-numbers
+PASS working guarded renderer for secb-numbers
+PASS one submenu registration for secb-calls
+PASS correct parent for secb-calls
+PASS working guarded renderer for secb-calls
+PASS no duplicate top menu; standalone fallback
+PASS inspection reads only aggregate routing counts
+PASS request-local inspection cache avoids duplicate queries
+PASS complete configuration never claims live acceptance
+PASS optional media credentials not required with recording off
+PASS missing-account stays incomplete
+PASS missing-token stays incomplete
+PASS unreadable-file stays incomplete
+PASS missing-db-version stays incomplete
+PASS missing-table stays incomplete
+PASS missing-extension stays incomplete
+PASS missing-gc stays incomplete
+PASS no-numbers stays incomplete
+PASS inactive-numbers stays incomplete
+PASS incomplete-route stays incomplete
+PASS failed-read stays incomplete
+PASS unknown-counts stays incomplete
+PASS recording-without-playback stays incomplete
+PASS existing inline constants remain supported
+PASS passthrough warning preserves acceptance limit
+PASS debug false is off, not missing
+PASS public phone uses guarded Base facade
+PASS forwarding field remains separate reference
+PASS administrator setup renderer and navigation
+PASS no settings or credential editor
+PASS redacts fixture-account-sentinel
+PASS redacts fixture-token-sentinel
+PASS redacts fixture-key-sentinel
+PASS redacts fixture-key-secret-sentinel
+PASS redacts fixture-url-secret
+PASS redacts fixture-query-secret
+PASS shared text escaped and unsafe policy URL removed
+PASS phone roles explicitly separated without routing substitution
+PASS unsafe webhook base suppressed; safe base yields four generated URLs
+PASS exact runtime-compatible subdirectory Voice URL and POST
+PASS callback/whisper methods match runtime
+PASS help directories append idempotently
+PASS actual original Base receives warning, not setup_required
+PASS original Base card opens CB without wrong Business Data CTA
+PASS actual original Base folder scanner registers CB Help
+PASS folder scanner preserves existing Help slug on collision
+PASS actual original Base Help renderer/deep link
+PASS Help covers localStorage
+PASS Help covers pool sizing
+PASS Help covers Whispers
+PASS Help covers Duration qualification
+PASS Help covers Recording defaults
+PASS Help covers GC
+PASS Help covers Uninstall
+PASS Help covers consent
+PASS Help covers CRM inquiry
+PASS Help covers call export
+PASS failed count read never claims recording is disabled
+PASS Help redacts fixture-token-sentinel
+PASS Help redacts fixture-key-secret-sentinel
+PASS Help redacts fixture-url-secret
+PASS read-only role denied Setup & Status
+PASS non-administrator setup denied before reads
+PASS direct Help include denies non-administrator
+PASS non-administrator status does not inspect configuration
+PASS zero settings/schema/schedule/HTTP/direct-ACF mutations
+RESULT mode=base PHP=8.5.12 77 PASS / 0 FAIL
+PASS candidate release and unchanged DB metadata
+PASS boot still invokes installer once (isolated adapter, not real migration)
+PASS actual plugin boot registers module before admin_menu
+PASS existing save/delete action hooks remain
+PASS module destination preserves settings slug
+PASS shared facts optional; page capability explicit
+PASS module filter preserves unrelated registrations
+PASS one submenu registration for secb-settings
+PASS correct parent for secb-settings
+PASS working guarded renderer for secb-settings
+PASS one submenu registration for secb-numbers
+PASS correct parent for secb-numbers
+PASS working guarded renderer for secb-numbers
+PASS one submenu registration for secb-calls
+PASS correct parent for secb-calls
+PASS working guarded renderer for secb-calls
+PASS no duplicate top menu; standalone fallback
+PASS inspection reads only aggregate routing counts
+PASS request-local inspection cache avoids duplicate queries
+PASS complete configuration never claims live acceptance
+PASS optional media credentials not required with recording off
+PASS missing-account stays incomplete
+PASS missing-token stays incomplete
+PASS unreadable-file stays incomplete
+PASS missing-db-version stays incomplete
+PASS missing-table stays incomplete
+PASS missing-extension stays incomplete
+PASS missing-gc stays incomplete
+PASS no-numbers stays incomplete
+PASS inactive-numbers stays incomplete
+PASS incomplete-route stays incomplete
+PASS failed-read stays incomplete
+PASS unknown-counts stays incomplete
+PASS recording-without-playback stays incomplete
+PASS existing inline constants remain supported
+PASS passthrough warning preserves acceptance limit
+PASS debug false is off, not missing
+PASS public phone uses guarded Base facade
+PASS forwarding field remains separate reference
+PASS administrator setup renderer and navigation
+PASS no settings or credential editor
+PASS redacts fixture-account-sentinel
+PASS redacts fixture-token-sentinel
+PASS redacts fixture-key-sentinel
+PASS redacts fixture-key-secret-sentinel
+PASS redacts fixture-url-secret
+PASS redacts fixture-query-secret
+PASS shared text escaped and unsafe policy URL removed
+PASS phone roles explicitly separated without routing substitution
+PASS unsafe webhook base suppressed; safe base yields four generated URLs
+PASS exact runtime-compatible subdirectory Voice URL and POST
+PASS callback/whisper methods match runtime
+PASS help directories append idempotently
+PASS standalone complete Help fallback
+PASS Help covers localStorage
+PASS Help covers pool sizing
+PASS Help covers Whispers
+PASS Help covers Duration qualification
+PASS Help covers Recording defaults
+PASS Help covers GC
+PASS Help covers Uninstall
+PASS Help covers consent
+PASS Help covers CRM inquiry
+PASS Help covers call export
+PASS failed count read never claims recording is disabled
+PASS Help redacts fixture-token-sentinel
+PASS Help redacts fixture-key-secret-sentinel
+PASS Help redacts fixture-url-secret
+PASS read-only role denied Setup & Status
+PASS non-administrator setup denied before reads
+PASS direct Help include denies non-administrator
+PASS non-administrator status does not inspect configuration
+PASS zero settings/schema/schedule/HTTP/direct-ACF mutations
+RESULT mode=absent PHP=8.5.12 73 PASS / 0 FAIL
+PASS candidate release and unchanged DB metadata
+PASS boot still invokes installer once (isolated adapter, not real migration)
+PASS actual plugin boot registers module before admin_menu
+PASS existing save/delete action hooks remain
+PASS module destination preserves settings slug
+PASS shared facts optional; page capability explicit
+PASS module filter preserves unrelated registrations
+PASS one submenu registration for secb-settings
+PASS correct parent for secb-settings
+PASS working guarded renderer for secb-settings
+PASS one submenu registration for secb-numbers
+PASS correct parent for secb-numbers
+PASS working guarded renderer for secb-numbers
+PASS one submenu registration for secb-calls
+PASS correct parent for secb-calls
+PASS working guarded renderer for secb-calls
+PASS no duplicate top menu; standalone fallback
+PASS inspection reads only aggregate routing counts
+PASS request-local inspection cache avoids duplicate queries
+PASS complete configuration never claims live acceptance
+PASS optional media credentials not required with recording off
+PASS missing-account stays incomplete
+PASS missing-token stays incomplete
+PASS unreadable-file stays incomplete
+PASS missing-db-version stays incomplete
+PASS missing-table stays incomplete
+PASS missing-extension stays incomplete
+PASS missing-gc stays incomplete
+PASS no-numbers stays incomplete
+PASS inactive-numbers stays incomplete
+PASS incomplete-route stays incomplete
+PASS failed-read stays incomplete
+PASS unknown-counts stays incomplete
+PASS recording-without-playback stays incomplete
+PASS existing inline constants remain supported
+PASS passthrough warning preserves acceptance limit
+PASS debug false is off, not missing
+PASS public phone uses guarded Base facade
+PASS forwarding field remains separate reference
+PASS administrator setup renderer and navigation
+PASS no settings or credential editor
+PASS redacts fixture-account-sentinel
+PASS redacts fixture-token-sentinel
+PASS redacts fixture-key-sentinel
+PASS redacts fixture-key-secret-sentinel
+PASS redacts fixture-url-secret
+PASS redacts fixture-query-secret
+PASS shared text escaped and unsafe policy URL removed
+PASS phone roles explicitly separated without routing substitution
+PASS unsafe webhook base suppressed; safe base yields four generated URLs
+PASS help directories append idempotently
+PASS standalone complete Help fallback
+PASS Help covers localStorage
+PASS Help covers pool sizing
+PASS Help covers Whispers
+PASS Help covers Duration qualification
+PASS Help covers Recording defaults
+PASS Help covers GC
+PASS Help covers Uninstall
+PASS Help covers consent
+PASS Help covers CRM inquiry
+PASS Help covers call export
+PASS failed count read never claims recording is disabled
+PASS Help redacts fixture-token-sentinel
+PASS Help redacts fixture-key-secret-sentinel
+PASS Help redacts fixture-url-secret
+PASS read-only role denied Setup & Status
+PASS non-administrator setup denied before reads
+PASS direct Help include denies non-administrator
+PASS non-administrator status does not inspect configuration
+PASS zero settings/schema/schedule/HTTP/direct-ACF mutations
+RESULT mode=unsafe-url PHP=8.5.12 71 PASS / 0 FAIL

@@ -12,6 +12,7 @@ final class RestRoutes
     public function register(): void
     {
         $ns=SECB_REST_NAMESPACE;
+        register_rest_route($ns,'/gateway/receive',['methods'=>'POST','callback'=>[new GatewayHandoffController(),'handle'],'permission_callback'=>'__return_true']);
         register_rest_route($ns,'/twilio/voice',['methods'=>'POST','callback'=>[new TwilioVoiceController(),'handle'],'permission_callback'=>'__return_true']);
         register_rest_route($ns,'/twilio/status',['methods'=>'POST','callback'=>[new TwilioStatusController(),'handle'],'permission_callback'=>'__return_true']);
         register_rest_route($ns,'/twilio/recording',['methods'=>'POST','callback'=>[new TwilioRecordingController(),'handle'],'permission_callback'=>'__return_true']);

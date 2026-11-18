@@ -39,12 +39,13 @@ final class TwilioVoiceController
                 exit;
             }
 
-            $callSid       = (string) ($_POST['CallSid'] ?? '');
-            $from          = (string) ($_POST['From'] ?? '');
-            $to            = (string) ($_POST['To'] ?? '');
-            $callerCity    = (string) ($_POST['FromCity'] ?? '');
-            $callerState   = (string) ($_POST['FromState'] ?? '');
-            $callerCountry = (string) ($_POST['FromCountry'] ?? '');
+            $post = wp_unslash($_POST);
+            $callSid       = (string) ($post['CallSid'] ?? '');
+            $from          = (string) ($post['From'] ?? '');
+            $to            = (string) ($post['To'] ?? '');
+            $callerCity    = (string) ($post['FromCity'] ?? '');
+            $callerState   = (string) ($post['FromState'] ?? '');
+            $callerCountry = (string) ($post['FromCountry'] ?? '');
 
             if ($callSid === '' || $to === '') {
                 Logger::error('voice_missing_required_params', ['call_sid' => $callSid, 'to' => $to]);
@@ -73,6 +74,7 @@ final class TwilioVoiceController
             // current active lease. No "most recent visitor who saw number X"
             // heuristic is used.
             $session = null;
+            $lease = null;
             try {
                 $lease = (new NumberLeaseRepository())->findActiveByTrackingNumber($trackingE164);
                 if ($lease !== null) {
@@ -106,6 +108,7 @@ final class TwilioVoiceController
                     $callRepo->insert([
                         'twilio_call_sid'        => $callSid,
                         'transaction_id'         => 'twilio:' . $callSid,
+                        'call_capture_json'      => \SiteEngine\CallBridge\Support\CallCapture::encode($trackingRow, $lease, $session, 'twilio:' . $callSid),
                         'tracking_number'        => $trackingE164,
                         'tracking_number_id'     => (int) $trackingRow['id'],
                         'caller_number'          => $callerE164 ?? $from,
@@ -187,16 +190,15 @@ final class TwilioVoiceController
             $tw->say($notice);
         }
 
-        $base = Config::webhookBaseUrl() . '/wp-json/' . SECB_REST_NAMESPACE;
         $dial = [
             'answerOnBridge' => 'true',
             'timeout'        => '22',
-            'action'         => $base . '/twilio/status',
+            'action'         => Config::callbackUrl('status'),
             'method'         => 'POST',
         ];
         if (!empty($trackingRow['record_calls'])) {
             $dial['record']                        = 'record-from-answer-dual';
-            $dial['recordingStatusCallback']       = $base . '/twilio/recording';
+            $dial['recordingStatusCallback']       = Config::callbackUrl('recording');
             $dial['recordingStatusCallbackEvent']  = 'completed';
             $dial['recordingStatusCallbackMethod'] = 'POST';
         }
@@ -207,7 +209,7 @@ final class TwilioVoiceController
             $msg = $isRepeat ? ($trackingRow['whisper_repeat'] ?? '') : ($trackingRow['whisper_new'] ?? '');
             $msg = trim((string) $msg);
             if ($msg !== '') {
-                $whisperUrl = $base . '/twilio/whisper?msg=' . rawurlencode($msg);
+                $whisperUrl = Config::callbackUrl('whisper', ['msg'=>$msg]);
             }
         }
         $tw->number((string) $trackingRow['forward_to'], $whisperUrl);

@@ -1,5 +1,107 @@
 # Changelog
 
+## 0.2.3 - 2026-11-17 (ordinary credential onboarding review candidate)
+
+- Use Base’s opt-in atomic Save for the complete required Twilio pair; ordinary setup hides resource/version/stage controls.
+- Label both masked fields, explain account changes and put optional playback under Advanced. Keep external authority, write-only storage and failure/uncertainty boundaries.
+- Complete one setup checklist; preserve direct routing and separate provider/central-hosting/integration milestones. No schema or calling behavior change.
+
+
+## 0.2.2 - 2026-11-17 (Base credential navigation review candidate)
+
+- Open the exact protected CB credential group through Base 2.5.0's supported helper; handle unavailable/unauthorized links without rendering errors.
+- No resolver, provider, callback, schema or recording behavior change. Base 2.5.0 remains an unreleased dependency.
+
+
+## 0.2.1 - 2026-11-16 (protected onboarding review candidate)
+
+- Register required Twilio pair and separate optional playback API pair through Base credentials-1; use its native protected write-only staging/activation UI and runtime reads. Preserve external authority and block shadowed saves or partial-field mixing.
+- Complete tabbed setup guidance, local/source errors, direct/central mode and exact applicable URLs, phone roles, number/DNI/qualification/recording steps and one combined manual checklist.
+- Preserve central routing, direct signature logic, recording transport, schema and evidence API. DB remains 1.1.0. No provider changes/calls/Climatrol deployment.
+
+
+## 0.2.0 - 2026-11-16 (central routing review candidate)
+
+- Optional standalone multi-client routing component with explicit registry, provider signatures, durable per-call destination pinning, bounded transport and cached initial Voice responses.
+- Authenticated scoped receiver with freshness/replay protection; all generated central callback URLs retain parent call/binding context. Direct signatures and callbacks remain supported.
+- Preserve client call/evidence authority, recording and external credential resolver. No schema change; DB 1.1.0. Gateway packaged distinctly; production activation and stable promotion not included.
+
+
+## 0.1.9 - 2026-11-16 (protected recording review candidate)
+
+- Add REST nonce to administrator playback links; explicitly enforce capability and nonce.
+- Derive HTTPS media target from configured account and persisted Recording SID; disable redirects, bound response size to 20 MiB, validate WAV signature, request two channels and prevent browser/proxy caching.
+- Check recording persistence and reconcile bounded conditional conflicts; preserve first completed marker and return 503 for unknown persistence, without promising provider retries.
+- Preserve per-number notice/enablement, dual-channel Dial, callback signatures, original evidence and terminal outcomes. No schema or credential-resolver change; DB 1.1.0.
+- Live recorded two-way audio/playback is pending operator acceptance; stable delivery remains 0.1.8.
+
+## 0.1.8 - 2026-11-16 (administration tabs review candidate)
+
+- Consolidate CB administration into one Call Bridge entry with Setup & Status,
+  Tracking Numbers, Call Log and Help & Reference tabs; default to Setup & Status.
+- Preserve legacy page/edit routes, capability and nonce boundaries, handlers and
+  number notices. Return save/delete actions to the Numbers tab. Keep shared Base
+  Help, other modules and standalone fallback navigation intact.
+- Reuse existing renderers with embedded headings and native WordPress link tabs.
+  No schema, provider, calling, recording, DNI or integration change; DB 1.1.0.
+
+## 0.1.7 - 2026-11-11 (unaccepted forward-only capture candidate)
+
+- New allocations persist their selected pool; new call inserts capture a versioned canonical-identity-bound original lease/number observation and UTC receipt time. Never reconstruct historical capture from current settings.
+- First terminal conditional persistence stores the exact threshold used for that decision. Duplicates, late callbacks and existing terminal rows cannot overwrite/backfill it.
+- Extend evidence v1 additively with capture metadata and available original assignment/threshold fields; malformed/conflicting capture returns capture_invalid. Legacy naive timestamp timezone and authoritative Consent remain unavailable.
+- DB 1.1.0 adds nullable calls.call_capture_json, calls.qualification_threshold_sec and number_leases.pool_group. No historical UPDATE/backfill; no allocation policy, forwarding, signature or media behavior change.
+- Add focused local persisted controller/replay tests and a target/manifest-gated CB-owned native fixture for AB's isolated executor. No main-Alma migration or Google exporter.
+
+## 0.1.6 - 2026-11-11 (unaccepted successor; not installed)
+
+- Correct Call Log Time (UTC) to Time (stored), with an explicit no-conversion explanation. Raw timestamps, ordering and historical rows are unchanged; database/site timezone settings are not modified.
+- Preserve the complete 0.1.5 supported call-evidence interface and its documentation. DB stays 1.0.0. No callback, lease/DNI, credential, provider or AB runtime changes.
+
+## 0.1.5 - 2026-11-06 (unaccepted call-evidence candidate; not installed)
+
+- Add trusted same-site PHP CallEvidence::read() for a canonical persisted call. One allow-listed SELECT reads the call snapshot, never current sessions, leases or tracking-number settings. No HTTP route, credential/media access or outbound delivery.
+- Preserve acquisition/session/number-assignment fields, outcome, duration and technical qualification. Unsnapshotted fields and AB-owned business/advertising decisions remain explicitly unavailable; no inquiry/consent linkage is fabricated.
+- Document AB ownership of all Google eligibility, conversion identity, deduplication and delivery for form- and call-origin outcomes. CB supplies evidence and implements no Google exporter.
+- Add a single labelled persisted local SQLite fixture across independent PHP processes and focused duplicate/late status checks. WordPress adapters and SQLite do not establish MariaDB, installed-site or AB end-to-end acceptance. DB stays 1.0.0; no schema/callback/credential changes.
+
+
+## 0.1.4 - 2026-11-04 (unaccepted callback repair candidate; not installed)
+
+- Validate all POST form fields independently of same-named query parameters; remove WordPress magic quoting exactly once for signature calculation and authenticated callback input.
+- Preserve the first terminal call outcome and monotonic progress; progress no longer finalizes qualification. Conditional persistence prevents a competing callback from overwriting a winner.
+- Reconcile terminal/progress write conflicts with at most three conditional attempts and checked readback. Preserve a persisted terminal winner; return HTTP 503 for database errors, changed/missing rows or unresolved contention instead of acknowledging uncertain persistence.
+- Persist only complete recording markers; duplicates, absent/in-progress notifications and conflicting replacements preserve the first completed marker, using conditional persistence. No media fetching or recording enablement.
+- Preserve installed 0.1.3 synthetic callback evidence (25 pass / 5 fail) and add focused child-process regressions. Database version remains 1.0.0; no schema migration.
+- First-final/first-completed retention is bounded duplicate/reorder protection, not a full provider event journal or persistent child-leg model. Native installed acceptance of this repair remains pending.
+
+
+## 0.1.3 - 2026-11-03 (development candidate; not stable)
+
+- Return HTTP 403 explicitly from the existing Tracking Numbers render/save/delete capability denials. Authorization, nonce ordering, repository behavior and fixed denial text are unchanged.
+- Package the approved narrow denial-response repair; no schema, lease/DNI, provider, recording or configuration change. Database version stays 1.0.0.
+- Installed permission verification and independent-browser acceptance are recorded separately; packaging does not imply acceptance.
+
+
+## 0.1.2 - 2026-10-28 (unaccepted candidate; not deployed)
+
+- Fail closed on allocation-critical read/write errors and verify persisted renewal expiry, including legitimate zero-row updates.
+- Serialize all sources/sessions within a database/site-prefix allocation lock; wait at most two seconds and release in finally. No schema change; DB stays 1.0.0.
+- Revalidate current number eligibility; preserve source-pinned reservations until expiry. Valid leases remain sticky across pool-size changes.
+- Guard attribution upsert under the allocation lock so rejected source transitions preserve attribution; check session persistence before issuing/renewing a lease.
+- Refresh ordinary DNI telephone links after replacement renewal while retaining labels, unrelated-link protection and restoration.
+- Preserve historical reproducers, extend local contract/controller/browser fixtures, and repin the prepared-only Alma plan.
+
+## 0.1.1 - 2026-10-27 (webhook layout review revision; not deployed)
+
+- Webhook URLs use stacked, CB-scoped endpoint sections with selectable single-line text and keyboard-focusable horizontal scrolling at narrow widths. Endpoint values, methods, escaping and navigation are unchanged.
+- Optional original Base 2.2.2 module navigation and CB-owned Help tab; no dependency on its unaccepted routing patch.
+- Read-only guided Setup & Status distinguishes missing prerequisites, optional features off, configuration presence and pending live acceptance.
+- Shared business context keeps phone roles separate; existing external configuration and per-number settings remain authoritative.
+- Twilio-only onboarding and comprehensive operations/reference guidance without provider actions or credential editing.
+- Isolated Base-present/absent, status, security/redaction, Help and mutation-trap fixtures.
+- No controller/signature/DNI/lease/schema/recording-transport changes. Database version remains 1.0.0.
+
 ## 0.1.0 - 2026-10-20
 
 Initial SiteEngine Call Bridge extraction from the production LeadEngine 1.3.0 call subsystem.

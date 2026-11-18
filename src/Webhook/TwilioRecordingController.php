@@ -40,10 +40,14 @@ final class TwilioRecordingController
         // Twilio sends recording callbacks with the parent CallSid in
         // CallSid (the inbound leg), and recording details in RecordingSid,
         // RecordingUrl, RecordingDuration.
-        $callSid           = (string) ($_POST['CallSid'] ?? '');
-        $recordingSid      = (string) ($_POST['RecordingSid'] ?? '');
-        $recordingUrl      = (string) ($_POST['RecordingUrl'] ?? '');
-        $recordingDuration = (int)    ($_POST['RecordingDuration'] ?? 0);
+        $post = wp_unslash($_POST);
+        $callSid           = (string) ($post['CallSid'] ?? '');
+        $recordingSid      = (string) ($post['RecordingSid'] ?? '');
+        $recordingUrl      = (string) ($post['RecordingUrl'] ?? '');
+        $recordingDuration = max(0, (int) ($post['RecordingDuration'] ?? 0));
+        // Legacy completed callbacks may omit RecordingStatus; incomplete/absent
+        // events must never erase an already persisted completed marker.
+        $recordingStatus = (string) ($post['RecordingStatus'] ?? 'completed');
 
         if ($callSid === '' || $recordingSid === '') {
             Logger::warn('recording_missing_params', compact('callSid', 'recordingSid'));
@@ -51,25 +55,48 @@ final class TwilioRecordingController
             return;
         }
 
+        if ($recordingStatus !== 'completed' || $recordingUrl === '') {
+            $this->emitEmpty();
+            return;
+        }
+
         try {
             $callRepo = new CallLogRepository();
-            $existing = $callRepo->findByCallSid($callSid);
-            if ($existing === null) {
-                Logger::warn('recording_call_not_found', ['call_sid' => $callSid]);
-                WebhookEvents::record(WebhookEvents::RECORDING_UNMATCHED, $callSid);
+            for ($attempt = 0; $attempt < 3; $attempt++) {
+                $existing = $callRepo->findByCallSid($callSid, true);
+                if ($existing === null) {
+                    Logger::warn('recording_call_not_found', ['call_sid' => $callSid]);
+                    WebhookEvents::record(WebhookEvents::RECORDING_UNMATCHED, $callSid);
+                    $this->emitEmpty();
+                    return;
+                }
+                if (!empty($existing['recording_sid']) && !empty($existing['recording_url'])) {
+                    $this->emitEmpty();
+                    return;
+                }
+                $expected = array_intersect_key($existing, array_flip(['recording_sid','recording_url','recording_duration_sec']));
+                if ($callRepo->updateIfCurrent((int) $existing['id'], [
+                    'recording_sid'          => $recordingSid,
+                    'recording_url'          => $recordingUrl,
+                    'recording_duration_sec' => $recordingDuration,
+                ], $expected, true)) {
+                    $this->emitEmpty();
+                    return;
+                }
+            }
+            $winner = $callRepo->findByCallSid($callSid, true);
+            if (!empty($winner['recording_sid']) && !empty($winner['recording_url'])) {
                 $this->emitEmpty();
                 return;
             }
-            $callRepo->update((int) $existing['id'], [
-                'recording_sid'          => $recordingSid,
-                'recording_url'          => $recordingUrl,
-                'recording_duration_sec' => $recordingDuration,
-            ]);
         } catch (\Throwable $e) {
-            Logger::error('recording_update_failed', ['error' => $e->getMessage()]);
+            Logger::error('recording_update_failed');
         }
-
-        $this->emitEmpty();
+        // Signals uncertainty, without claiming the provider will retry.
+        status_header(503);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Recording persistence unavailable';
+        exit;
     }
 
     private function emitEmpty(): void
